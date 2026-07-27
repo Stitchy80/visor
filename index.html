@@ -84,14 +84,20 @@
   }
   .bg-panel .bp-label {
     font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--cyan-soft);
-    opacity: 0.85; padding: 4px 6px 2px; letter-spacing: 0.5px;
+    opacity: 0.85; padding: 5px 8px 2px; letter-spacing: 0.5px;
   }
-  .bg-bars { display: flex; gap: 2px; align-items: flex-end; height: 22px; padding: 0 6px 5px; }
-  .bg-bars span { width: 3px; background: var(--cyan); opacity: 0.55; border-radius: 1px 1px 0 0; }
-  .bp1 { top: 10%; left: 8%; width: 72px; height: 48px; }
-  .bp2 { top: 16%; right: 9%; width: 60px; height: 62px; }
-  .bp3 { bottom: 20%; left: 9%; width: 66px; height: 40px; }
-  .bp4 { bottom: 13%; right: 8%; width: 68px; height: 52px; }
+  .bg-panel .bp-value {
+    font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--text);
+    padding: 2px 8px 1px; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .bg-panel .bp-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 7.5px; color: var(--text-dim);
+    padding: 0 8px 7px; letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .bp1 { top: 19%; left: 8%; width: 96px; }
+  .bp2 { top: 19%; right: 9%; width: 96px; }
+  .bp3 { bottom: 31%; left: 9%; width: 96px; }
+  .bp4 { bottom: 31%; right: 8%; width: 96px; }
   .bp-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(var(--cyan-rgb),0.3); }
   .bp-ring.r1 { top: 26%; left: 13%; width: 86px; height: 86px; }
   .bp-ring.r2 { bottom: 24%; right: 12%; width: 66px; height: 66px; }
@@ -162,22 +168,26 @@
   .dot.speak { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
   .dot.err { background: var(--err); box-shadow: 0 0 6px var(--err); }
 
-  /* thematic zone chips — decorative now, real filter tagging under the hood */
-  .zones { display: flex; gap: 6px; margin-top: 10px; flex-shrink: 0; }
-  .zone-chip {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
-    background: rgba(10,20,24,0.5); border: 1px solid var(--line);
-    border-radius: 6px; padding: 6px 4px; cursor: pointer;
-    font-family: 'JetBrains Mono', monospace; font-size: 8.5px; letter-spacing: 0.5px;
-    color: var(--text-dim); transition: all 0.25s ease;
+  /* thematic zones — icônes seules, nichées entre le noyau et les anneaux ; le libellé
+     n'apparaît qu'en infobulle (title) au survol. Filtrage réel du transcript en dessous. */
+  .zone-orbit {
+    position: absolute; z-index: 7; width: 25px; height: 25px; border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(8,16,20,0.75); border: 1px solid var(--line); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--text-dim);
+    transition: all 0.25s ease; backdrop-filter: blur(2px);
   }
-  .zone-chip .zi { width: 17px; height: 17px; }
-  .zone-chip .zi svg { width: 100%; height: 100%; color: var(--text-dim); }
-  .zone-chip.active .zi svg { color: inherit; filter: drop-shadow(0 0 4px currentColor); }
-  .zone-chip.active { border-color: var(--cyan); color: var(--cyan-soft); box-shadow: 0 0 10px rgba(var(--cyan-rgb),0.25); }
-  .zone-chip[data-zone="coeur"].active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 10px rgba(255,206,84,0.25); }
-  .zone-chip[data-zone="oeil"].active { border-color: var(--violet); color: var(--violet); box-shadow: 0 0 10px rgba(180,107,255,0.25); }
-  .zone-chip[data-zone="general"].active { border-color: #ffffff; color: #ffffff; box-shadow: 0 0 10px rgba(255,255,255,0.25); }
+  .zone-orbit.ne { top: 70px; left: 192px; }
+  .zone-orbit.se { top: 192px; left: 192px; }
+  .zone-orbit.sw { top: 192px; left: 70px; }
+  .zone-orbit.nw { top: 70px; left: 70px; }
+  .zone-orbit svg { width: 14px; height: 14px; color: inherit; }
+  .zone-orbit.active { color: inherit; box-shadow: 0 0 10px currentColor; }
+  .zone-orbit.active svg { filter: drop-shadow(0 0 4px currentColor); }
+  .zone-orbit[data-zone="cerveau"].active { border-color: var(--cyan); color: var(--cyan-soft); }
+  .zone-orbit[data-zone="coeur"].active { border-color: var(--gold); color: var(--gold); }
+  .zone-orbit[data-zone="oeil"].active { border-color: var(--violet); color: var(--violet); }
+  .zone-orbit[data-zone="general"].active { border-color: #ffffff; color: #ffffff; }
 
   .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; min-height: 0; }
 
@@ -239,12 +249,12 @@
 
   .core-glow { position: absolute; inset: 60px; border-radius: 50%;
     background: radial-gradient(circle, var(--cyan-dim) 0%, transparent 70%); filter: blur(6px); transition: all 0.4s ease; }
-  .core-center { position: absolute; inset: 76px; border-radius: 50%;
+  .core-center { position: absolute; inset: 68px; border-radius: 50%;
     background: radial-gradient(circle at 38% 32%, #0e2830, #050b0d 72%);
     border: 1px solid var(--cyan-dim); display: flex; align-items: center; justify-content: center;
     transition: all 0.4s ease;
     box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 0 rgba(var(--cyan-rgb),0), inset 0 2px 6px rgba(255,255,255,0.04); }
-  .core-canvas { width: 100px; height: 100px; position: relative; z-index: 2; }
+  .core-canvas { width: 114px; height: 114px; position: relative; z-index: 2; }
 
   @media (prefers-reduced-motion: reduce) {
     .core-pulse, .core-inner-ring,
@@ -332,10 +342,10 @@
 <body>
 <div class="scanline"></div>
 <div class="bg-panels">
-  <div class="bg-panel bp1"><div class="bp-label">NET.SYNC</div><div class="bg-bars" id="bgBars1"></div></div>
-  <div class="bg-panel bp2"><div class="bp-label">CORE.LOAD</div><div class="bg-bars" id="bgBars2"></div></div>
-  <div class="bg-panel bp3"><div class="bp-label">I/O.STREAM</div><div class="bg-bars" id="bgBars3"></div></div>
-  <div class="bg-panel bp4"><div class="bp-label">AUX.PWR</div><div class="bg-bars" id="bgBars4"></div></div>
+  <div class="bg-panel bp1"><div class="bp-label">DATE</div><div class="bp-value" id="bpDateValue">--</div><div class="bp-sub" id="bpDateSub">--</div></div>
+  <div class="bg-panel bp2"><div class="bp-label">MÉTÉO</div><div class="bp-value" id="bpWeatherValue">--°</div><div class="bp-sub" id="bpWeatherSub">…</div></div>
+  <div class="bg-panel bp3"><div class="bp-label">STOCKAGE</div><div class="bp-value" id="bpStorageValue">--</div><div class="bp-sub" id="bpStorageSub">…</div></div>
+  <div class="bg-panel bp4"><div class="bp-label">SYSTÈME</div><div class="bp-value" id="bpDeviceValue">--</div><div class="bp-sub" id="bpDeviceSub">--</div></div>
   <div class="bp-ring r1"></div>
   <div class="bp-ring r2"></div>
 </div>
@@ -368,13 +378,6 @@
     </div>
   </div>
 
-  <div class="zones">
-    <div class="zone-chip" data-zone="cerveau"><div class="zi"><svg viewBox="0 0 24 24"><path d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z"/></svg></div>COGNITION</div>
-    <div class="zone-chip" data-zone="coeur"><div class="zi"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-5.1-10-9.3C.4 8.6 1.8 5 5.4 4.2c2-.4 3.9.5 5 2.1 1.1-1.6 3-2.5 5-2.1C19 5 20.4 8.6 18.7 11.7 16.2 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 12h3l1.5-3 2 5 1.5-3H16" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></div>VITALS</div>
-    <div class="zone-chip" data-zone="oeil"><div class="zi"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>HORIZON</div>
-    <div class="zone-chip" data-zone="general"><div class="zi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 12h19M12 2.5c2.6 2.6 4 6 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-6-4-9.5s1.4-6.9 4-9.5z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></div>GLOBAL</div>
-  </div>
-
   <div class="stage">
     <div class="hud-readout tl">SIGNAL <span class="val">STABLE</span><br>LIEN &nbsp;&nbsp;<span class="val">CLAUDE</span></div>
     <div class="hud-readout br">MÉM. &nbsp;<span class="val" id="hudMem">0 ÉCH.</span><br>ZONE &nbsp;<span class="val" id="hudZone">TOUTES</span></div>
@@ -384,6 +387,10 @@
         <div class="radar-sweep"></div>
         <div class="compass-tick n">000</div><div class="compass-tick e">090</div>
         <div class="compass-tick s">180</div><div class="compass-tick w">270</div>
+        <button class="zone-orbit ne" data-zone="cerveau" title="Cognition"><svg viewBox="0 0 24 24"><path d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z" fill="currentColor"/></svg></button>
+        <button class="zone-orbit se" data-zone="coeur" title="Vitals"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-5.1-10-9.3C.4 8.6 1.8 5 5.4 4.2c2-.4 3.9.5 5 2.1 1.1-1.6 3-2.5 5-2.1C19 5 20.4 8.6 18.7 11.7 16.2 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 12h3l1.5-3 2 5 1.5-3H16" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+        <button class="zone-orbit sw" data-zone="oeil" title="Horizon"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <button class="zone-orbit nw" data-zone="general" title="Global"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 12h19M12 2.5c2.6 2.6 4 6 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-6-4-9.5s1.4-6.9 4-9.5z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
         <div class="satellite pos-1">
           <svg viewBox="0 0 54 54"><circle class="satellite-arc" cx="27" cy="27" r="22" stroke-dasharray="103 138" id="arcPwr"/></svg>
           <div class="satellite-label" id="valPwr">100<small>PWR</small></div>
@@ -413,7 +420,7 @@
           <div class="core-inner-ring"></div>
           <div class="core-inner-ring r2"></div>
           <div class="core-pulse"></div>
-          <canvas class="core-canvas" id="coreCanvas" width="200" height="200"></canvas>
+          <canvas class="core-canvas" id="coreCanvas" width="228" height="228"></canvas>
         </div>
       </div>
       <div class="state-label" id="stateLabel">Appuie pour parler</div>
@@ -535,15 +542,15 @@ function applyZoneFilter() {
   document.getElementById('hudZone').textContent = activeZone ? activeZone.toUpperCase() : 'TOUTES';
 }
 
-document.querySelectorAll('.zone-chip').forEach(chip => {
+document.querySelectorAll('.zone-orbit').forEach(chip => {
   chip.addEventListener('click', () => {
     const z = chip.dataset.zone;
     if (activeZone === z) {
       activeZone = null;
-      document.querySelectorAll('.zone-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.zone-orbit').forEach(c => c.classList.remove('active'));
     } else {
       activeZone = z;
-      document.querySelectorAll('.zone-chip').forEach(c => c.classList.toggle('active', c === chip));
+      document.querySelectorAll('.zone-orbit').forEach(c => c.classList.toggle('active', c === chip));
     }
     applyZoneFilter();
   });
@@ -807,16 +814,63 @@ async function queryModel(prompt, zone) {
   }
 }
 
-// --- Ambient background bars (purely decorative) ---
-function initBgBars(id, count) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const bars = [];
-  for (let i = 0; i < count; i++) { const s = document.createElement('span'); el.appendChild(s); bars.push(s); }
-  function tick() { bars.forEach(b => { b.style.height = (Math.random() * 18 + 2) + 'px'; }); }
-  tick(); setInterval(tick, 800 + Math.random() * 500);
+// --- Panneaux d'angle : données réelles, pas de barres décoratives sans sens ---
+function updateDatePanel() {
+  const now = new Date();
+  document.getElementById('bpDateValue').textContent =
+    now.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }).replace('.', '').toUpperCase();
+  document.getElementById('bpDateSub').textContent =
+    now.toLocaleDateString('fr-FR', { weekday: 'long' }).toUpperCase();
 }
-initBgBars('bgBars1', 10); initBgBars('bgBars2', 8); initBgBars('bgBars3', 9); initBgBars('bgBars4', 7);
+updateDatePanel();
+setInterval(updateDatePanel, 60000);
+
+function weatherCodeLabel(code) {
+  if (code === 0) return 'CIEL CLAIR';
+  if (code <= 3) return 'NUAGEUX';
+  if (code === 45 || code === 48) return 'BROUILLARD';
+  if (code >= 51 && code <= 67) return 'PLUIE';
+  if (code >= 71 && code <= 86) return 'NEIGE';
+  if (code >= 95) return 'ORAGE';
+  return 'VARIABLE';
+}
+function updateWeatherPanel() {
+  const valueEl = document.getElementById('bpWeatherValue');
+  const subEl = document.getElementById('bpWeatherSub');
+  if (!navigator.geolocation) { valueEl.textContent = '--°'; subEl.textContent = 'INDISPONIBLE'; return; }
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`);
+        const data = await res.json();
+        valueEl.textContent = Math.round(data.current.temperature_2m) + '°';
+        subEl.textContent = weatherCodeLabel(data.current.weather_code);
+      } catch (e) { valueEl.textContent = '--°'; subEl.textContent = 'ERREUR'; }
+    },
+    () => { valueEl.textContent = '--°'; subEl.textContent = 'POSITION REFUSÉE'; },
+    { timeout: 8000 }
+  );
+}
+updateWeatherPanel();
+
+async function updateStoragePanel() {
+  const valueEl = document.getElementById('bpStorageValue');
+  const subEl = document.getElementById('bpStorageSub');
+  if (!navigator.storage || !navigator.storage.estimate) { valueEl.textContent = '--'; subEl.textContent = 'INDISPONIBLE'; return; }
+  try {
+    const { usage, quota } = await navigator.storage.estimate();
+    valueEl.textContent = (usage / 1e9).toFixed(2) + '/' + (quota / 1e9).toFixed(0) + ' GB';
+    subEl.textContent = 'STOCKAGE NAVIGATEUR';
+  } catch (e) { valueEl.textContent = '--'; subEl.textContent = 'INDISPONIBLE'; }
+}
+updateStoragePanel();
+
+function updateDevicePanel() {
+  document.getElementById('bpDeviceValue').textContent = screen.width + '×' + screen.height;
+  document.getElementById('bpDeviceSub').textContent = (navigator.platform || 'WEB').toUpperCase();
+}
+updateDevicePanel();
 
 // --- Sphère de particules réactive au centre du noyau (remplace l'icône statique) ---
 (function initCoreSphere() {
@@ -825,7 +879,7 @@ initBgBars('bgBars1', 10); initBgBars('bgBars2', 8); initBgBars('bgBars3', 9); i
   const ctx = canvas.getContext('2d');
   const size = canvas.width;
   const cx = size / 2, cy = size / 2;
-  const radius = 62;
+  const radius = 71;
   const N = 42;
 
   // Répartition à peu près uniforme sur une sphère (spirale de Fibonacci)
