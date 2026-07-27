@@ -20,9 +20,16 @@
     --gold: #ffce54;
     --gold-dim: #4a3a14;
     --err: #ff4d5e;
+    --neon-green: #39ff8c;
     --text: #eaf8fb;
     --text-dim: #56727c;
   }
+
+  /* Sélectionner une zone reteinte tout le HUD (pas juste l'icône) dans sa couleur —
+     mark-mode (réflexion) est déclaré après et gagne donc pendant que Visor réfléchit. */
+  body.zone-cognition { --cyan: var(--gold); --cyan-soft: #ffe29b; --cyan-dim: var(--gold-dim); --cyan-rgb: 255,206,84; }
+  body.zone-vitals { --cyan: var(--err); --cyan-soft: #ff9aa5; --cyan-dim: #4a1216; --cyan-rgb: 255,77,94; }
+  body.zone-horizon { --cyan: var(--neon-green); --cyan-soft: #9dffc9; --cyan-dim: #0d4a2a; --cyan-rgb: 57,255,140; }
 
   body.mark-mode {
     --cyan: #ff3b30;
@@ -84,14 +91,20 @@
   }
   .bg-panel .bp-label {
     font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--cyan-soft);
-    opacity: 0.85; padding: 4px 6px 2px; letter-spacing: 0.5px;
+    opacity: 0.85; padding: 5px 8px 2px; letter-spacing: 0.5px;
   }
-  .bg-bars { display: flex; gap: 2px; align-items: flex-end; height: 22px; padding: 0 6px 5px; }
-  .bg-bars span { width: 3px; background: var(--cyan); opacity: 0.55; border-radius: 1px 1px 0 0; }
-  .bp1 { top: 10%; left: 8%; width: 72px; height: 48px; }
-  .bp2 { top: 16%; right: 9%; width: 60px; height: 62px; }
-  .bp3 { bottom: 20%; left: 9%; width: 66px; height: 40px; }
-  .bp4 { bottom: 13%; right: 8%; width: 68px; height: 52px; }
+  .bg-panel .bp-value {
+    font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--text);
+    padding: 2px 8px 1px; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .bg-panel .bp-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 7.5px; color: var(--text-dim);
+    padding: 0 8px 7px; letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .bp1 { top: 27%; left: 8%; width: 96px; }
+  .bp2 { top: 27%; right: 9%; width: 96px; }
+  .bp3 { bottom: 31%; left: 9%; width: 96px; }
+  .bp4 { bottom: 31%; right: 8%; width: 96px; }
   .bp-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(var(--cyan-rgb),0.3); }
   .bp-ring.r1 { top: 26%; left: 13%; width: 86px; height: 86px; }
   .bp-ring.r2 { bottom: 24%; right: 12%; width: 66px; height: 66px; }
@@ -152,32 +165,74 @@
   .modal-panel input { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
     font-family: 'JetBrains Mono', monospace; font-size: 12.5px; padding: 9px 10px; border-radius: 6px; margin-bottom: 12px; }
   .modal-panel input:focus { outline: none; border-color: var(--cyan); }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-panel select { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 10px; border-radius: 6px; margin-bottom: 14px; }
+  .modal-panel.wide { max-width: 440px; }
+  .modal-panel textarea { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
+    font-family: 'Rajdhani', sans-serif; font-size: 13.5px; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px;
+    resize: vertical; }
+  .modal-panel textarea:focus { outline: none; border-color: var(--cyan); }
+  .voice-slider-label { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 4px; }
+  .voice-slider-label span { color: var(--cyan-soft); font-variant-numeric: tabular-nums; }
+  .modal-panel input[type="range"] { width: 100%; margin-bottom: 14px; accent-color: var(--cyan); height: 4px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
   .modal-actions button { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px;
     padding: 7px 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--cyan-dim); background: none; color: var(--text-dim); }
   .modal-actions button.primary { border-color: var(--cyan); color: var(--cyan-soft); }
   .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-right: 5px; }
   .dot.live { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-  .dot.busy { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
+  .dot.busy { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
   .dot.speak { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
   .dot.err { background: var(--err); box-shadow: 0 0 6px var(--err); }
 
-  /* thematic zone chips — decorative now, real filter tagging under the hood */
-  .zones { display: flex; gap: 6px; margin-top: 10px; flex-shrink: 0; }
-  .zone-chip {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
-    background: rgba(10,20,24,0.5); border: 1px solid var(--line);
-    border-radius: 6px; padding: 6px 4px; cursor: pointer;
-    font-family: 'JetBrains Mono', monospace; font-size: 8.5px; letter-spacing: 0.5px;
-    color: var(--text-dim); transition: all 0.25s ease;
+  /* thematic zones — icônes seules en rangée sous la télémétrie (l'ancien nichage dans
+     l'anneau était trop à l'étroit) ; le libellé n'apparaît qu'en infobulle au survol. */
+  .zone-row { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-shrink: 0; }
+  .zone-orbit {
+    z-index: 7; width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(8,16,20,0.75); border: 1px solid var(--line); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--text-dim);
+    transition: all 0.25s ease; backdrop-filter: blur(2px);
   }
-  .zone-chip .zi { width: 17px; height: 17px; }
-  .zone-chip .zi svg { width: 100%; height: 100%; color: var(--text-dim); }
-  .zone-chip.active .zi svg { color: inherit; filter: drop-shadow(0 0 4px currentColor); }
-  .zone-chip.active { border-color: var(--cyan); color: var(--cyan-soft); box-shadow: 0 0 10px rgba(var(--cyan-rgb),0.25); }
-  .zone-chip[data-zone="coeur"].active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 10px rgba(255,206,84,0.25); }
-  .zone-chip[data-zone="oeil"].active { border-color: var(--violet); color: var(--violet); box-shadow: 0 0 10px rgba(180,107,255,0.25); }
-  .zone-chip[data-zone="general"].active { border-color: #ffffff; color: #ffffff; box-shadow: 0 0 10px rgba(255,255,255,0.25); }
+  .zone-orbit svg { width: 17px; height: 17px; color: inherit; overflow: visible; }
+  .zone-orbit.active { color: inherit; box-shadow: 0 0 10px currentColor; }
+  .zone-orbit.active svg { filter: drop-shadow(0 0 4px currentColor); }
+  .zone-orbit[data-zone="cerveau"].active { border-color: var(--gold); color: var(--gold); }
+  .zone-orbit[data-zone="coeur"].active { border-color: var(--err); color: var(--err); }
+  .zone-orbit[data-zone="oeil"].active { border-color: var(--neon-green); color: var(--neon-green); }
+  .zone-orbit[data-zone="general"].active { border-color: var(--cyan); color: var(--cyan-soft); }
+
+  /* Cognition — neurones qui clignotent dans le cerveau */
+  .neuron { fill: currentColor; filter: drop-shadow(0 0 1.5px currentColor); animation: neuron-blink 2.6s ease-in-out infinite; }
+  .neuron:nth-child(3) { animation-delay: 0.3s; }
+  .neuron:nth-child(4) { animation-delay: 0.9s; }
+  .neuron:nth-child(5) { animation-delay: 1.4s; }
+  .neuron:nth-child(6) { animation-delay: 0.6s; }
+  @keyframes neuron-blink { 0%, 100% { opacity: 0.15; } 50% { opacity: 1; } }
+
+  /* Vitals — le cœur bat, l'électrocardiogramme trace */
+  .zone-orbit[data-zone="coeur"] svg { transform-origin: 12px 12px; animation: heartbeat 1.7s ease-in-out infinite; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); } 15% { transform: scale(1.22); } 30% { transform: scale(1); }
+    45% { transform: scale(1.14); } 60% { transform: scale(1); }
+  }
+  .ekg-line { stroke-dasharray: 15; animation: ekg-sweep 1.7s linear infinite; }
+  @keyframes ekg-sweep { to { stroke-dashoffset: -30; } }
+
+  /* Horizon — iris qui balaie, pupille qui pulse */
+  .iris-sweep { transform-origin: 12px 12px; animation: iris-spin 3s linear infinite; }
+  @keyframes iris-spin { to { transform: rotate(360deg); } }
+  .eye-pupil-dot { transform-origin: 12px 12px; animation: pupil-pulse 2.2s ease-in-out infinite; }
+  @keyframes pupil-pulse { 0%, 100% { transform: scale(0.8); opacity: 0.7; } 50% { transform: scale(1.2); opacity: 1; } }
+
+  /* Global — le globe tourne sur lui-même */
+  .meridian { transform-origin: 12px 12px; animation: globe-spin 3.6s linear infinite; }
+  @keyframes globe-spin { 0% { transform: scaleX(1); } 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .neuron, .zone-orbit[data-zone="coeur"] svg, .ekg-line, .iris-sweep, .eye-pupil-dot, .meridian { animation: none !important; }
+  }
 
   .stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; min-height: 0; }
 
@@ -202,6 +257,15 @@
   .ring-seg { stroke: var(--cyan-dim); stroke-width: 6; transform-origin: 50% 50%; animation: spin 55s linear infinite reverse; opacity: 0.9; }
   .ring-seg2 { fill: none; stroke: var(--cyan); stroke-width: 3.5; transform-origin: 50% 50%; animation: spin 20s linear infinite; opacity: 0.55; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Les deux anneaux les plus externes : maillage de nœuds façon réseau de neurones,
+     dans le même esprit que la sphère centrale, plutôt que de simples pointillés. */
+  .neural-edge { stroke: var(--cyan-dim); stroke-width: 0.7; opacity: 0.6; }
+  .neural-link { stroke: var(--cyan-dim); stroke-width: 0.5; opacity: 0.35; }
+  .neural-node { fill: var(--cyan); opacity: 0.85; animation: neuron-blink 3s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .neural-node { animation: none !important; }
+  }
 
   .radar-sweep {
     position: absolute; inset: 4px; border-radius: 50%;
@@ -237,48 +301,17 @@
     font-weight: 700; text-align: center; line-height: 1.1; }
   .satellite-label small { display: block; font-size: 5.5px; color: var(--text-dim); font-weight: 400; letter-spacing: 0.5px; }
 
-  .core-glow { position: absolute; inset: 60px; border-radius: 50%;
+  .core-glow { position: absolute; inset: 20px; border-radius: 50%;
     background: radial-gradient(circle, var(--cyan-dim) 0%, transparent 70%); filter: blur(6px); transition: all 0.4s ease; }
-  .core-center { position: absolute; inset: 76px; border-radius: 50%;
+  .core-center { position: absolute; inset: 28px; border-radius: 50%;
     background: radial-gradient(circle at 38% 32%, #0e2830, #050b0d 72%);
     border: 1px solid var(--cyan-dim); display: flex; align-items: center; justify-content: center;
     transition: all 0.4s ease;
     box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 0 rgba(var(--cyan-rgb),0), inset 0 2px 6px rgba(255,255,255,0.04); }
-  .core-center svg.icon.eye { width: 60px; height: 60px; overflow: visible; position: relative; z-index: 2; }
-  .eye-blades { transform-origin: 50px 50px; animation: spin 34s linear infinite; }
-  .eye-blades line { stroke: var(--text-dim); stroke-width: 2; stroke-linecap: round; transition: stroke 0.3s ease; }
-  .eye-iris-ring { fill: none; stroke: var(--cyan-dim); stroke-width: 1.3; transition: stroke 0.3s ease; }
-  .eye-pupil { fill: #050b0d; stroke: var(--text-dim); stroke-width: 1.6; transform-origin: 50px 50px;
-    transition: stroke 0.3s ease, transform 0.45s cubic-bezier(.3,0,.2,1); }
-  .eye-pupil-core { fill: var(--text-dim); transform-origin: 50px 50px; transition: fill 0.3s ease;
-    animation: pupil-live 3.6s ease-in-out infinite; }
-  @keyframes pupil-live { 0%, 100% { transform: scale(0.9); opacity: 0.75; } 50% { transform: scale(1.08); opacity: 1; } }
-  .eye-lid { fill: #050b0d; }
-  .eye-lid-top { transform-origin: 50px 0px; animation: blink 7.5s ease-in-out infinite; }
-  .eye-lid-bottom { transform-origin: 50px 100px; animation: blink 7.5s ease-in-out infinite; }
-  @keyframes blink { 0%, 92%, 100% { transform: scaleY(0); } 95%, 96.5% { transform: scaleY(1); } }
-
-  .core-wrap.listening .eye-pupil { stroke: var(--cyan); transform: scale(1.14); }
-  .core-wrap.listening .eye-iris-ring { stroke: var(--cyan); }
-  .core-wrap.listening .eye-pupil-core { fill: var(--cyan-soft); }
-  .core-wrap.listening .eye-blades line { stroke: var(--cyan-soft); }
-  .core-wrap.listening .eye-blades { animation-duration: 10s; }
-
-  .core-wrap.thinking .eye-pupil { stroke: var(--violet); transform: scale(0.82); }
-  .core-wrap.thinking .eye-iris-ring { stroke: var(--violet); }
-  .core-wrap.thinking .eye-pupil-core { fill: var(--violet); animation-duration: 0.9s; }
-  .core-wrap.thinking .eye-blades line { stroke: var(--violet); }
-  .core-wrap.thinking .eye-blades { animation-duration: 2.4s; }
-
-  .core-wrap.speaking .eye-pupil { stroke: var(--gold); transform: scale(1.05); animation: pupil-speak 0.5s ease-in-out infinite; }
-  .core-wrap.speaking .eye-iris-ring { stroke: var(--gold); }
-  .core-wrap.speaking .eye-pupil-core { fill: var(--gold); }
-  .core-wrap.speaking .eye-blades line { stroke: var(--gold); }
-  .core-wrap.speaking .eye-blades { animation-duration: 6s; }
-  @keyframes pupil-speak { 0%, 100% { transform: scale(0.98); } 50% { transform: scale(1.16); } }
+  .core-canvas { width: 190px; height: 190px; position: relative; z-index: 2; }
 
   @media (prefers-reduced-motion: reduce) {
-    .eye-blades, .eye-lid-top, .eye-lid-bottom, .eye-pupil-core, .core-pulse, .core-inner-ring,
+    .core-pulse, .core-inner-ring,
     .radar-sweep, .ring-outer, .ring-mid, .ring-inner, .ring-seg, .ring-seg2 { animation: none !important; }
   }
 
@@ -291,7 +324,6 @@
 
   .core-wrap.listening .core-center { border-color: var(--cyan); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 34px 4px rgba(var(--cyan-rgb),0.5); }
   .core-wrap.listening .core-glow { background: radial-gradient(circle, var(--cyan) 0%, transparent 70%); opacity: 0.9; }
-  .core-wrap.listening .core-center svg.icon { fill: var(--cyan-soft); }
   .core-wrap.listening .ring-inner { animation-duration: 2.8s; }
   .core-wrap.listening .ring-mid { animation-duration: 5.5s; }
   .core-wrap.listening .radar-sweep { animation-duration: 1.3s; opacity: 1; }
@@ -299,19 +331,17 @@
   .core-wrap.listening .core-pulse { animation-duration: 0.95s; background: radial-gradient(circle, rgba(var(--cyan-rgb),0.65) 0%, transparent 65%); }
   .core-wrap.listening .core-inner-ring { animation-duration: 1.8s; border-color: var(--cyan); }
 
-  .core-wrap.thinking .core-center { border-color: var(--violet); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 32px 4px rgba(180,107,255,0.45); }
-  .core-wrap.thinking .core-glow { background: radial-gradient(circle, var(--violet) 0%, transparent 70%); opacity: 0.8; }
-  .core-wrap.thinking .core-center svg.icon { fill: var(--violet); }
+  .core-wrap.thinking .core-center { border-color: var(--cyan); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 32px 4px rgba(var(--cyan-rgb),0.45); }
+  .core-wrap.thinking .core-glow { background: radial-gradient(circle, var(--cyan) 0%, transparent 70%); opacity: 0.8; }
   .core-wrap.thinking .ring-outer { animation-duration: 3.2s; }
   .core-wrap.thinking .ring-inner { animation-duration: 1.4s; }
-  .core-wrap.thinking .radar-sweep { background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(180,107,255,0.35) 340deg, rgba(180,107,255,0.7) 358deg, transparent 360deg); animation-duration: 0.85s; }
-  .core-wrap.thinking .bracket { border-color: var(--violet); }
-  .core-wrap.thinking .core-pulse { animation-duration: 0.65s; background: radial-gradient(circle, rgba(180,107,255,0.6) 0%, transparent 65%); }
-  .core-wrap.thinking .core-inner-ring { animation-duration: 1s; border-color: var(--violet); }
+  .core-wrap.thinking .radar-sweep { background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(var(--cyan-rgb),0.35) 340deg, rgba(var(--cyan-rgb),0.7) 358deg, transparent 360deg); animation-duration: 0.85s; }
+  .core-wrap.thinking .bracket { border-color: var(--cyan); }
+  .core-wrap.thinking .core-pulse { animation-duration: 0.65s; background: radial-gradient(circle, rgba(var(--cyan-rgb),0.6) 0%, transparent 65%); }
+  .core-wrap.thinking .core-inner-ring { animation-duration: 1s; border-color: var(--cyan); }
 
   .core-wrap.speaking .core-center { border-color: var(--gold); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 34px 4px rgba(255,206,84,0.45); }
   .core-wrap.speaking .core-glow { background: radial-gradient(circle, var(--gold) 0%, transparent 70%); opacity: 0.85; }
-  .core-wrap.speaking .core-center svg.icon { fill: var(--gold); }
   .core-wrap.speaking .ring-mid { animation-duration: 3.6s; }
   .core-wrap.speaking .radar-sweep { background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(255,206,84,0.35) 340deg, rgba(255,206,84,0.7) 358deg, transparent 360deg); }
   .core-wrap.speaking .bracket { border-color: var(--gold); }
@@ -326,7 +356,7 @@
     animation: eq-idle 2.4s ease-in-out infinite; transition: background 0.3s ease; }
   @keyframes eq-idle { 0%,100% { height: 3px; } 50% { height: 7px; } }
   .core-wrap.listening ~ .equalizer span { animation: eq-listen 0.85s ease-in-out infinite; opacity: 0.95; background: var(--cyan); }
-  .core-wrap.thinking ~ .equalizer span { animation: eq-listen 0.5s ease-in-out infinite; opacity: 0.95; background: var(--violet); }
+  .core-wrap.thinking ~ .equalizer span { animation: eq-listen 0.5s ease-in-out infinite; opacity: 0.95; background: var(--cyan); }
   .core-wrap.speaking ~ .equalizer span { animation: eq-speak 0.5s ease-in-out infinite; opacity: 0.95; background: var(--gold); }
   .equalizer span:nth-child(1) { animation-delay: 0s; } .equalizer span:nth-child(2) { animation-delay: 0.1s; }
   .equalizer span:nth-child(3) { animation-delay: 0.2s; } .equalizer span:nth-child(4) { animation-delay: 0.3s; }
@@ -366,10 +396,10 @@
 <body>
 <div class="scanline"></div>
 <div class="bg-panels">
-  <div class="bg-panel bp1"><div class="bp-label">NET.SYNC</div><div class="bg-bars" id="bgBars1"></div></div>
-  <div class="bg-panel bp2"><div class="bp-label">CORE.LOAD</div><div class="bg-bars" id="bgBars2"></div></div>
-  <div class="bg-panel bp3"><div class="bp-label">I/O.STREAM</div><div class="bg-bars" id="bgBars3"></div></div>
-  <div class="bg-panel bp4"><div class="bp-label">AUX.PWR</div><div class="bg-bars" id="bgBars4"></div></div>
+  <div class="bg-panel bp1"><div class="bp-label">DATE</div><div class="bp-value" id="bpDateValue">--</div><div class="bp-sub" id="bpDateSub">--</div></div>
+  <div class="bg-panel bp2"><div class="bp-label">MÉTÉO</div><div class="bp-value" id="bpWeatherValue">--°</div><div class="bp-sub" id="bpWeatherSub">…</div></div>
+  <div class="bg-panel bp3"><div class="bp-label">API CLAUDE</div><div class="bp-value" id="bpApiValue">…</div><div class="bp-sub" id="bpApiSub">EN ATTENTE</div></div>
+  <div class="bg-panel bp4"><div class="bp-label">MICRO / VOIX</div><div class="bp-value" id="bpMicValue">--</div><div class="bp-sub" id="bpMicSub">--</div></div>
   <div class="bp-ring r1"></div>
   <div class="bp-ring r2"></div>
 </div>
@@ -388,6 +418,40 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="voiceModal">
+  <div class="modal-panel">
+    <h2>Voix de Visor</h2>
+    <p>Il n'existe pas de "voix J.A.R.V.I.S" officielle dans les navigateurs — choisis parmi les voix installées sur cet appareil et ajuste vitesse/tonalité pour t'en rapprocher. Utilise "Tester" pour juger par toi-même, aucun appel à Claude n'est fait.</p>
+    <select id="voiceSelect"></select>
+    <label class="voice-slider-label">Vitesse <span id="voiceRateVal">0.95</span></label>
+    <input type="range" id="voiceRate" min="0.7" max="1.3" step="0.01" value="0.95">
+    <label class="voice-slider-label">Tonalité <span id="voicePitchVal">0.85</span></label>
+    <input type="range" id="voicePitch" min="0.6" max="1.3" step="0.01" value="0.85">
+    <div class="modal-actions">
+      <button id="voiceTest">TESTER</button>
+      <button id="voiceCancel">FERMER</button>
+      <button id="voiceSave" class="primary">ENREGISTRER</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="memoryModal">
+  <div class="modal-panel wide">
+    <h2>Mémoire des zones</h2>
+    <p>Ce que Visor sait durablement sur toi par zone — injecté dans le contexte quand la zone correspondante est active, sans jamais quitter ce navigateur.</p>
+    <label class="voice-slider-label">Cognition (travail)</label>
+    <textarea id="memCerveau" rows="4" placeholder="Ex : poste actuel, entreprise, parcours..."></textarea>
+    <label class="voice-slider-label">Vitals (santé, relations)</label>
+    <textarea id="memCoeur" rows="3" placeholder="Ex : suivi médical, famille..."></textarea>
+    <label class="voice-slider-label">Horizon (projets futurs)</label>
+    <textarea id="memOeil" rows="3" placeholder="Ex : objectifs, projets en cours..."></textarea>
+    <div class="modal-actions">
+      <button id="memoryCancel">FERMER</button>
+      <button id="memorySave" class="primary">ENREGISTRER</button>
+    </div>
+  </div>
+</div>
+
 <div class="shell">
   <div class="telemetry">
     <div class="brand">V.I.S.O<span>.R</span></div>
@@ -396,17 +460,50 @@
       <button id="apiKeyBtn" class="icon-btn" title="Configurer la clé API" aria-label="Configurer la clé API">
         <svg viewBox="0 0 24 24"><path d="M14 2a6 6 0 00-5.66 8H8L2 16v4h4l1-1v-2h2v-2h2l1.66-1.66A6 6 0 1014 2zm2 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
       </button>
+      <button id="voiceBtn" class="icon-btn" title="Réglages de la voix" aria-label="Réglages de la voix">
+        <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
+      </button>
+      <button id="memoryBtn" class="icon-btn" title="Mémoire des zones" aria-label="Mémoire des zones">
+        <svg viewBox="0 0 24 24"><path d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z"/></svg>
+      </button>
       <button id="wakeBtn" class="clear-btn wake-btn" aria-pressed="false"><span class="dot" id="wakeDot"></span>HEY VISOR</button>
       <button id="clearBtn" class="clear-btn">RÉINIT.</button>
       <span><span class="dot" id="statusDot"></span><span id="statusText">VEILLE</span></span>
     </div>
   </div>
 
-  <div class="zones">
-    <div class="zone-chip" data-zone="cerveau"><div class="zi"><svg viewBox="0 0 24 24"><path d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z"/></svg></div>COGNITION</div>
-    <div class="zone-chip" data-zone="coeur"><div class="zi"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-5.1-10-9.3C.4 8.6 1.8 5 5.4 4.2c2-.4 3.9.5 5 2.1 1.1-1.6 3-2.5 5-2.1C19 5 20.4 8.6 18.7 11.7 16.2 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 12h3l1.5-3 2 5 1.5-3H16" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></div>VITALS</div>
-    <div class="zone-chip" data-zone="oeil"><div class="zi"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>HORIZON</div>
-    <div class="zone-chip" data-zone="general"><div class="zi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 12h19M12 2.5c2.6 2.6 4 6 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-6-4-9.5s1.4-6.9 4-9.5z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></div>GLOBAL</div>
+  <div class="zone-row">
+    <button class="zone-orbit" data-zone="cerveau" title="Cognition">
+      <svg viewBox="0 0 24 24">
+        <path class="brain-shape" d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <circle class="neuron" cx="7.2" cy="7" r="1"/>
+        <circle class="neuron" cx="16.3" cy="7.5" r="1"/>
+        <circle class="neuron" cx="11.5" cy="12" r="1"/>
+        <circle class="neuron" cx="6.5" cy="16" r="1"/>
+        <circle class="neuron" cx="16.8" cy="15.2" r="1"/>
+      </svg>
+    </button>
+    <button class="zone-orbit" data-zone="coeur" title="Vitals">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 21s-7.5-5.1-10-9.3C.4 8.6 1.8 5 5.4 4.2c2-.4 3.9.5 5 2.1 1.1-1.6 3-2.5 5-2.1C19 5 20.4 8.6 18.7 11.7 16.2 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path class="ekg-line" d="M4 12h3l1.5-3 2 5 1.5-3H16" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
+    <button class="zone-orbit" data-zone="oeil" title="Horizon">
+      <svg viewBox="0 0 24 24">
+        <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <circle class="iris-sweep" cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 22"/>
+        <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
+        <circle class="eye-pupil-dot" cx="12" cy="12" r="1.5" fill="currentColor"/>
+      </svg>
+    </button>
+    <button class="zone-orbit" data-zone="general" title="Global">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M2.5 12h19" stroke="currentColor" stroke-width="1.2"/>
+        <path class="meridian" d="M12 2.5c2.6 2.6 4 6 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-6-4-9.5s1.4-6.9 4-9.5z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
   </div>
 
   <div class="stage">
@@ -434,40 +531,20 @@
           <svg viewBox="0 0 40 40"><circle class="satellite-arc" cx="20" cy="20" r="15" stroke-dasharray="55 95" id="arcNet"/></svg>
           <div class="satellite-label" id="valNet" style="font-size:6.5px">--<small>NET</small></div>
         </div>
-        <svg viewBox="0 0 240 240">
-          <circle class="ring ring-outer" cx="120" cy="120" r="96" stroke-dasharray="2 6"/>
-          <circle class="ring ticks ring-outer" cx="120" cy="120" r="84" stroke-dasharray="1 11.5"/>
-          <circle class="ring ring-mid" cx="120" cy="120" r="72" stroke-dasharray="6 4"/>
-          <circle class="ring ring-inner" cx="120" cy="120" r="58" stroke-dasharray="1 5"/>
-          <circle class="ring-seg" cx="120" cy="120" r="102" stroke-dasharray="4 3 14 3 4 3 20 3"/>
-          <circle class="ring-seg2" cx="120" cy="120" r="78" stroke-dasharray="30 8 10 8"/>
+        <svg viewBox="0 0 240 240" id="ringsSvg">
+          <g class="ring ring-outer" id="meshOuter"></g>
+          <circle class="ring ticks ring-outer" cx="120" cy="120" r="111" stroke-dasharray="1 11.5"/>
+          <circle class="ring ring-mid" cx="120" cy="120" r="106" stroke-dasharray="6 4"/>
+          <circle class="ring ring-inner" cx="120" cy="120" r="98" stroke-dasharray="1 5"/>
+          <g class="ring-seg" id="meshSeg"></g>
+          <circle class="ring-seg2" cx="120" cy="120" r="112" stroke-dasharray="30 8 10 8"/>
         </svg>
         <div class="core-glow"></div>
         <div class="core-center">
           <div class="core-inner-ring"></div>
           <div class="core-inner-ring r2"></div>
           <div class="core-pulse"></div>
-          <svg class="icon eye" viewBox="0 0 100 100">
-            <g class="eye-blades">
-              <line x1="50" y1="12" x2="50" y2="21"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(30 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(60 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(90 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(120 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(150 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(180 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(210 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(240 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(270 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(300 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(330 50 50)"/>
-            </g>
-            <circle class="eye-iris-ring" cx="50" cy="50" r="30"/>
-            <circle class="eye-pupil" cx="50" cy="50" r="13.5"/>
-            <circle class="eye-pupil-core" cx="50" cy="50" r="3.4"/>
-            <rect class="eye-lid eye-lid-top" x="4" y="0" width="92" height="52"/>
-            <rect class="eye-lid eye-lid-bottom" x="4" y="48" width="92" height="52"/>
-          </svg>
+          <canvas class="core-canvas" id="coreCanvas" width="380" height="380"></canvas>
         </div>
       </div>
       <div class="state-label" id="stateLabel">Appuie pour parler</div>
@@ -529,6 +606,7 @@ function updateApiKeyIndicator() {
   apiKeyBtn.title = has
     ? 'Clé API personnelle configurée (cliquer pour changer)'
     : 'Configurer une clé API personnelle (uniquement nécessaire hors claude.ai)';
+  if (typeof updateApiStatusPanel === 'function') updateApiStatusPanel();
 }
 apiKeyBtn.addEventListener('click', () => {
   apiKeyInput.value = getApiKey();
@@ -550,11 +628,22 @@ setInterval(() => {
   sessionTimeEl.textContent = mm + ':' + ss;
 }, 1000);
 
-// --- Naive keyword-based zone tagging (foundation for real filtering later) ---
+// --- Keyword-based zone tagging, utilisé uniquement quand aucune zone n'est forcée
+// (le clic sur une zone force désormais explicitement le tri, voir handleUserMessage) ---
 const ZONE_KEYWORDS = {
-  cerveau: ['travail','projet pro','oaklen','code','coder','réunion','dossier','job','stage','apprentissage','étude'],
-  coeur: ['santé','médecin','couple','relation','famille','enfant','fatigue','stress','sommeil','émotion','père','mère'],
-  oeil: ['futur','objectif','projet','plan','avenir','vision','rêve','ambition','5 ans','10 ans']
+  cerveau: ['travail','projet pro','oaklen','code','coder','développement','réunion','dossier','job','stage',
+    'apprentissage','étude','formation','boulot','entreprise','collègue','collègues','patron','deadline','tâche',
+    'mission','carrière','cv','entretien d\'embauche','examen','cours','université','école','productivité',
+    'concentration','apprendre','compétence','certification','salaire','promotion','bureau','télétravail',
+    'présentation','rapport','client','contrat','diplôme'],
+  coeur: ['santé','médecin','docteur','hôpital','couple','relation','famille','enfant','enfants','fatigue','stress',
+    'sommeil','dormir','émotion','émotions','père','mère','ami','amie','amitié','amour','conjoint','conjointe',
+    'mari','femme','dispute','thérapie','psy','anxiété','angoisse','humeur','forme physique','sport','alimentation',
+    'régime','maladie','symptôme','douleur','rendez-vous médical','vaccin','médicament','bien-être','méditation',
+    'repos','triste','tristesse','heureux','heureuse'],
+  oeil: ['futur','objectif','objectifs','projet perso','plan','avenir','vision','rêve','rêves','ambition','5 ans',
+    '10 ans','envie','souhait','changement de vie','déménagement','voyage','retraite','investissement','épargne',
+    'achat maison','création d\'entreprise','nouveau départ','aspiration','perspective','horizon','long terme']
 };
 function guessZone(text) {
   const t = text.toLowerCase();
@@ -589,16 +678,23 @@ function applyZoneFilter() {
   document.getElementById('hudZone').textContent = activeZone ? activeZone.toUpperCase() : 'TOUTES';
 }
 
-document.querySelectorAll('.zone-chip').forEach(chip => {
+const ZONE_BODY_CLASS = { cerveau: 'zone-cognition', coeur: 'zone-vitals', oeil: 'zone-horizon' };
+function applyZoneTheme(zone) {
+  document.body.classList.remove('zone-cognition', 'zone-vitals', 'zone-horizon');
+  if (zone && ZONE_BODY_CLASS[zone]) document.body.classList.add(ZONE_BODY_CLASS[zone]);
+}
+
+document.querySelectorAll('.zone-orbit').forEach(chip => {
   chip.addEventListener('click', () => {
     const z = chip.dataset.zone;
     if (activeZone === z) {
       activeZone = null;
-      document.querySelectorAll('.zone-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.zone-orbit').forEach(c => c.classList.remove('active'));
     } else {
       activeZone = z;
-      document.querySelectorAll('.zone-chip').forEach(c => c.classList.toggle('active', c === chip));
+      document.querySelectorAll('.zone-orbit').forEach(c => c.classList.toggle('active', c === chip));
     }
+    applyZoneTheme(activeZone);
     applyZoneFilter();
   });
 });
@@ -660,9 +756,9 @@ if (!SpeechRecognition) {
   recognition.lang = 'fr-FR';
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  recognition.onstart = () => { recognizing = true; setState('listening', 'live', 'ÉCOUTE', 'Je t\'écoute...'); };
+  recognition.onstart = () => { recognizing = true; setState('listening', 'live', 'ÉCOUTE', 'Je t\'écoute...'); if (typeof updateMicPanel === 'function') updateMicPanel(); };
   recognition.onend = () => { recognizing = false; if (!coreWrap.classList.contains('thinking') && !coreWrap.classList.contains('speaking')) setState(null, '', 'VEILLE', 'Appuie pour parler'); };
-  recognition.onerror = (e) => { addMsg('sys', 'Erreur reconnaissance vocale : ' + e.error); setState(null, 'err', 'ERREUR', 'Appuie pour réessayer'); };
+  recognition.onerror = (e) => { addMsg('sys', 'Erreur reconnaissance vocale : ' + e.error); setState(null, 'err', 'ERREUR', 'Appuie pour réessayer'); if (typeof updateMicPanel === 'function') updateMicPanel(); };
   recognition.onresult = async (event) => { const t = event.results[0][0].transcript; await handleUserMessage(t); };
 
   // --- Wake word ("Hey Visor" / "Ok Visor") : reconnaissance continue séparée ---
@@ -767,29 +863,106 @@ async function submitText() {
 }
 
 async function handleUserMessage(text) {
-  const zone = guessZone(text);
+  // Une zone active force le classement (mémoire dédiée) ; sans sélection, on devine par mots-clés.
+  const zone = activeZone || guessZone(text);
   addMsg('user', text, zone);
   await queryModel(text, zone);
 }
 
 // --- Voice synthesis ---
+const VOICE_PREF_KEY = 'visor:voice-prefs';
+function getVoicePrefs() { try { return JSON.parse(localStorage.getItem(VOICE_PREF_KEY)) || {}; } catch (e) { return {}; } }
+function setVoicePrefs(p) { try { localStorage.setItem(VOICE_PREF_KEY, JSON.stringify(p)); } catch (e) {} }
+
+let availableVoices = [];
 let frenchVoice = null;
 function loadVoices() {
   if (!window.speechSynthesis) return;
-  const voices = window.speechSynthesis.getVoices();
-  frenchVoice = voices.find(v => v.lang === 'fr-FR') || voices.find(v => v.lang.startsWith('fr')) || null;
+  availableVoices = window.speechSynthesis.getVoices();
+  frenchVoice = availableVoices.find(v => v.lang === 'fr-FR') || availableVoices.find(v => v.lang.startsWith('fr')) || null;
 }
-if (window.speechSynthesis) { loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
+function pickVoice(voiceURI) {
+  if (voiceURI) {
+    const match = availableVoices.find(v => v.voiceURI === voiceURI);
+    if (match) return match;
+  }
+  return frenchVoice;
+}
+function buildUtterance(text, overrideOpts) {
+  const prefs = Object.assign({ rate: 0.95, pitch: 0.85 }, getVoicePrefs(), overrideOpts || {});
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR';
+  const v = pickVoice(prefs.voiceURI);
+  if (v) u.voice = v;
+  u.rate = prefs.rate; u.pitch = prefs.pitch;
+  return u;
+}
+if (window.speechSynthesis) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = () => {
+    loadVoices();
+    if (typeof updateMicPanel === 'function') updateMicPanel();
+    if (typeof populateVoiceSelect === 'function') populateVoiceSelect();
+  };
+}
 function speak(text) {
   if (!window.speechSynthesis) { setState(null, '', 'VEILLE', 'Appuie pour parler'); return; }
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR'; if (frenchVoice) u.voice = frenchVoice; u.rate = 1.02;
+  const u = buildUtterance(text);
   u.onstart = () => setState('speaking', 'speak', 'RÉPONSE', 'Visor parle...');
   u.onend = () => setState(null, '', 'VEILLE', 'Appuie pour parler');
   u.onerror = () => setState(null, '', 'VEILLE', 'Appuie pour parler');
   setTimeout(() => window.speechSynthesis.speak(u), 50);
 }
+function testVoice(text, overrideOpts) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(buildUtterance(text, overrideOpts));
+}
+
+// --- Réglages de voix (menu + aperçu) ---
+const voiceBtn = document.getElementById('voiceBtn');
+const voiceModal = document.getElementById('voiceModal');
+const voiceSelect = document.getElementById('voiceSelect');
+const voiceRate = document.getElementById('voiceRate');
+const voicePitch = document.getElementById('voicePitch');
+const voiceRateVal = document.getElementById('voiceRateVal');
+const voicePitchVal = document.getElementById('voicePitchVal');
+
+function populateVoiceSelect() {
+  if (!voiceSelect) return;
+  const prefs = getVoicePrefs();
+  voiceSelect.innerHTML = '';
+  availableVoices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI;
+    opt.textContent = v.name + ' (' + v.lang + ')';
+    if (v.voiceURI === prefs.voiceURI || (!prefs.voiceURI && v === frenchVoice)) opt.selected = true;
+    voiceSelect.appendChild(opt);
+  });
+}
+(function initVoiceUI() {
+  if (!voiceBtn) return;
+  const prefs = getVoicePrefs();
+  voiceRate.value = prefs.rate ?? 0.95;
+  voicePitch.value = prefs.pitch ?? 0.85;
+  voiceRateVal.textContent = voiceRate.value;
+  voicePitchVal.textContent = voicePitch.value;
+  voiceRate.addEventListener('input', () => voiceRateVal.textContent = voiceRate.value);
+  voicePitch.addEventListener('input', () => voicePitchVal.textContent = voicePitch.value);
+  voiceBtn.addEventListener('click', () => { populateVoiceSelect(); voiceModal.classList.add('open'); });
+  document.getElementById('voiceCancel').addEventListener('click', () => voiceModal.classList.remove('open'));
+  document.getElementById('voiceSave').addEventListener('click', () => {
+    setVoicePrefs({ voiceURI: voiceSelect.value, rate: parseFloat(voiceRate.value), pitch: parseFloat(voicePitch.value) });
+    voiceModal.classList.remove('open');
+    addMsg('sys', 'Préférences de voix enregistrées.');
+  });
+  document.getElementById('voiceTest').addEventListener('click', () => {
+    testVoice("Bien sûr. Parce qu'apparemment, appuyer sur un bouton était beaucoup trop simple pour toi.", {
+      voiceURI: voiceSelect.value, rate: parseFloat(voiceRate.value), pitch: parseFloat(voicePitch.value)
+    });
+  });
+})();
 
 // --- Claude API ---
 // Deux modes, essayés dans l'ordre :
@@ -826,15 +999,78 @@ async function callAnthropic(payload) {
   }
 }
 
+const VISOR_BASE_PROMPT = "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal à la personnalité affirmée, dans l'esprit de J.A.R.V.I.S. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Ton ton est pince-sans-rire et légèrement ironique : tu n'hésites pas à taquiner gentiment l'utilisateur avec un sarcasme mesuré et une pointe d'humour sec, sans jamais être blessant, méprisant ou irrespectueux — la taquinerie reste affectueuse, jamais froide.";
+const ZONE_FOCUS = {
+  cerveau: " Ici, tu es concentré sur la zone Cognition (travail, apprentissage, productivité) : garde ton raisonnement centré sur ce terrain, sans le mélanger aux sujets santé ou projets long terme sauf si l'utilisateur les amène lui-même.",
+  coeur: " Ici, tu es concentré sur la zone Vitals (santé, relations, émotions) : reste attentif et posé sur ces sujets sensibles, garde ta pointe d'ironie mais mise avant tout sur la bienveillance.",
+  oeil: " Ici, tu es concentré sur la zone Horizon (projets futurs, objectifs, vision long terme) : aide à clarifier et structurer les ambitions et échéances, sans replonger dans le quotidien immédiat sauf si pertinent."
+};
+const VISOR_GLOBAL_SUFFIX = " Ici en mode Global, tu as accès à l'historique complet de l'utilisateur toutes zones confondues : chaque échange passé est étiqueté [Cognition], [Vitals] ou [Horizon] selon son thème d'origine. Utilise activement ces informations pour faire des liens et des synthèses entre les domaines de sa vie (travail/cognition, santé et relations, projets futurs) dès que c'est pertinent, sans attendre qu'on te le demande explicitement — c'est précisément le rôle du mode Global, par opposition aux zones spécialisées qui restent cloisonnées à leur propre sujet.";
+const ZONE_MEMORY_KEY = 'visor:zone-memory';
+const ZONE_MEMORY_DEFAULTS = {
+  cerveau: "Profil professionnel connu : Steve Lafleche, en poste chez BNP Paribas depuis plus de 11 ans (Paris, Île-de-France). Poste actuel depuis février 2023 : Direction Transformation Organisation Process Expertise Monétique. Parcours interne chez BNP Paribas : Responsable des paiements - Monétique et Espèces (juil. 2021 - févr. 2023) ; Auditeur - Inspection générale (sept. 2019 - juil. 2021) ; Directeur d'agence au Touquet-Paris-Plage (mars 2017 - sept. 2019) ; Chargé de Mission Régionale CAP/DIA (nov. 2014 - mars 2017). Formation : Master 2 Activités bancaires et financières (2013-2014) puis Licence Economics (2010-2013), Université de Picardie Jules Verne. Certifications : Inclusive Leaders (2024), Ambassadeur BDDF (2018). Anglais professionnel, notions de chinois.",
+  coeur: "",
+  oeil: ""
+};
+function getZoneMemory() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(ZONE_MEMORY_KEY));
+    return Object.assign({}, ZONE_MEMORY_DEFAULTS, stored || {});
+  } catch (e) { return Object.assign({}, ZONE_MEMORY_DEFAULTS); }
+}
+function setZoneMemory(mem) { try { localStorage.setItem(ZONE_MEMORY_KEY, JSON.stringify(mem)); } catch (e) {} }
+function buildSystemPrompt(scopedZone) {
+  if (scopedZone && ZONE_FOCUS[scopedZone]) {
+    let p = VISOR_BASE_PROMPT + ZONE_FOCUS[scopedZone];
+    const mem = getZoneMemory()[scopedZone];
+    if (mem && mem.trim()) p += " Mémoire connue sur l'utilisateur pour cette zone (à utiliser naturellement dans la conversation, sans la réciter mécaniquement) : " + mem.trim();
+    return p;
+  }
+  return VISOR_BASE_PROMPT + VISOR_GLOBAL_SUFFIX;
+}
+const ZONE_LABELS = { cerveau: 'Cognition', coeur: 'Vitals', oeil: 'Horizon' };
+
+// --- Modal mémoire des zones ---
+(function initMemoryUI() {
+  const memoryBtn = document.getElementById('memoryBtn');
+  const memoryModal = document.getElementById('memoryModal');
+  if (!memoryBtn) return;
+  const fields = { cerveau: document.getElementById('memCerveau'), coeur: document.getElementById('memCoeur'), oeil: document.getElementById('memOeil') };
+  memoryBtn.addEventListener('click', () => {
+    const mem = getZoneMemory();
+    Object.keys(fields).forEach(z => { fields[z].value = mem[z] || ''; });
+    memoryModal.classList.add('open');
+  });
+  document.getElementById('memoryCancel').addEventListener('click', () => memoryModal.classList.remove('open'));
+  document.getElementById('memorySave').addEventListener('click', () => {
+    const mem = {};
+    Object.keys(fields).forEach(z => { mem[z] = fields[z].value; });
+    setZoneMemory(mem);
+    memoryModal.classList.remove('open');
+    addMsg('sys', 'Mémoire des zones enregistrée.');
+  });
+})();
+
 async function queryModel(prompt, zone) {
   setState('thinking', 'busy', 'ANALYSE', 'Je réfléchis...');
   const thinkingMsg = addMsg('ai', '<em style="color:var(--text-dim)">...</em>');
   history.push({ role: 'user', content: prompt, zone });
+  // Une zone spécifique (hors Global) n'envoie à Claude que sa propre mémoire —
+  // les échanges Cognition/Vitals/Horizon ne se mélangent plus entre eux.
+  const scopedZone = (zone && zone !== 'general') ? zone : null;
+  // En mode Global, on étiquette chaque échange par sa zone d'origine pour que Claude
+  // puisse structurellement recouper/synthétiser entre Cognition/Vitals/Horizon.
+  const contextMessages = scopedZone
+    ? history.filter(m => m.zone === scopedZone).map(m => ({ role: m.role, content: m.content }))
+    : history.map(m => ({
+        role: m.role,
+        content: (m.role === 'user' && ZONE_LABELS[m.zone]) ? `[${ZONE_LABELS[m.zone]}] ${m.content}` : m.content
+      }));
   try {
     const res = await callAnthropic({
       model: "claude-sonnet-4-6", max_tokens: 1000,
-      system: "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.",
-      messages: history.map(m => ({ role: m.role, content: m.content }))
+      system: buildSystemPrompt(scopedZone),
+      messages: contextMessages
     });
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
@@ -861,16 +1097,198 @@ async function queryModel(prompt, zone) {
   }
 }
 
-// --- Ambient background bars (purely decorative) ---
-function initBgBars(id, count) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const bars = [];
-  for (let i = 0; i < count; i++) { const s = document.createElement('span'); el.appendChild(s); bars.push(s); }
-  function tick() { bars.forEach(b => { b.style.height = (Math.random() * 18 + 2) + 'px'; }); }
-  tick(); setInterval(tick, 800 + Math.random() * 500);
+// --- Panneaux d'angle : données réelles, pas de barres décoratives sans sens ---
+function updateDatePanel() {
+  const now = new Date();
+  document.getElementById('bpDateValue').textContent =
+    now.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }).replace('.', '').toUpperCase();
+  document.getElementById('bpDateSub').textContent =
+    now.toLocaleDateString('fr-FR', { weekday: 'long' }).toUpperCase();
 }
-initBgBars('bgBars1', 10); initBgBars('bgBars2', 8); initBgBars('bgBars3', 9); initBgBars('bgBars4', 7);
+updateDatePanel();
+setInterval(updateDatePanel, 60000);
+
+function weatherCodeLabel(code) {
+  if (code === 0) return 'CIEL CLAIR';
+  if (code <= 3) return 'NUAGEUX';
+  if (code === 45 || code === 48) return 'BROUILLARD';
+  if (code >= 51 && code <= 67) return 'PLUIE';
+  if (code >= 71 && code <= 86) return 'NEIGE';
+  if (code >= 95) return 'ORAGE';
+  return 'VARIABLE';
+}
+function updateWeatherPanel() {
+  const valueEl = document.getElementById('bpWeatherValue');
+  const subEl = document.getElementById('bpWeatherSub');
+  if (!navigator.geolocation) { valueEl.textContent = '--°'; subEl.textContent = 'INDISPONIBLE'; return; }
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`);
+        const data = await res.json();
+        valueEl.textContent = Math.round(data.current.temperature_2m) + '°';
+        subEl.textContent = weatherCodeLabel(data.current.weather_code);
+      } catch (e) { valueEl.textContent = '--°'; subEl.textContent = 'ERREUR'; }
+    },
+    () => { valueEl.textContent = '--°'; subEl.textContent = 'POSITION REFUSÉE'; },
+    { timeout: 8000 }
+  );
+}
+updateWeatherPanel();
+
+// Statuts honnêtes : uniquement des capacités réellement présentes dans cette page
+// (pas de Node.js/PyAudio/Home Assistant/SERPAPI/Google — ça n'existe pas dans un fichier HTML seul).
+function updateApiStatusPanel() {
+  const valueEl = document.getElementById('bpApiValue');
+  const subEl = document.getElementById('bpApiSub');
+  if (!valueEl) return;
+  if (nativeConfirmedWorking === true) { valueEl.textContent = 'ACTIF'; subEl.textContent = 'CLAUDE.AI NATIF'; }
+  else if (getApiKey()) { valueEl.textContent = 'ACTIF'; subEl.textContent = 'CLÉ PERSONNELLE'; }
+  else if (nativeConfirmedWorking === false) { valueEl.textContent = 'INACTIF'; subEl.textContent = 'AUCUNE CLÉ'; }
+  else { valueEl.textContent = '…'; subEl.textContent = 'EN ATTENTE'; }
+}
+updateApiStatusPanel();
+
+async function updateMicPanel() {
+  const valueEl = document.getElementById('bpMicValue');
+  const subEl = document.getElementById('bpMicSub');
+  const hasSR = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  let permState = null;
+  try {
+    if (navigator.permissions && navigator.permissions.query) {
+      const status = await navigator.permissions.query({ name: 'microphone' });
+      permState = status.state;
+    }
+  } catch (e) { /* API permissions non supportée pour "microphone" sur ce navigateur */ }
+  valueEl.textContent = !hasSR ? 'INDISPONIBLE' : permState === 'granted' ? 'PRÊT' : permState === 'denied' ? 'BLOQUÉ' : 'EN ATTENTE';
+  const hasFrVoice = window.speechSynthesis ? window.speechSynthesis.getVoices().some(v => v.lang && v.lang.startsWith('fr')) : false;
+  subEl.textContent = 'VOIX FR ' + (hasFrVoice ? 'OK' : '--');
+}
+updateMicPanel();
+
+// --- Les 2 anneaux externes en maillage de nœuds façon réseau de neurones ---
+(function initNeuralRings() {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const cx = 120, cy = 120;
+  function buildRing(id, radius, count, jitter) {
+    const g = document.getElementById(id);
+    if (!g) return;
+    const pts = [];
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const r = radius + (Math.random() * 2 - 1) * jitter;
+      pts.push({ x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r });
+    }
+    pts.forEach((p, i) => {
+      const next = pts[(i + 1) % count];
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', p.x); line.setAttribute('y1', p.y);
+      line.setAttribute('x2', next.x); line.setAttribute('y2', next.y);
+      line.setAttribute('class', 'neural-edge');
+      g.appendChild(line);
+    });
+    pts.forEach(p => {
+      const dot = document.createElementNS(svgNS, 'circle');
+      dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); dot.setAttribute('r', 1.5);
+      dot.setAttribute('class', 'neural-node');
+      dot.style.animationDelay = (Math.random() * 3).toFixed(2) + 's';
+      g.appendChild(dot);
+    });
+  }
+  buildRing('meshOuter', 116, 22, 2.5);
+  buildRing('meshSeg', 122, 16, 2);
+})();
+
+// --- Sphère de particules réactive au centre du noyau (remplace l'icône statique) ---
+(function initCoreSphere() {
+  const canvas = document.getElementById('coreCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const cx = size / 2, cy = size / 2;
+  const radius = 119;
+  const N = 42;
+
+  // Répartition à peu près uniforme sur une sphère (spirale de Fibonacci)
+  const points = [];
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < N; i++) {
+    const y = 1 - (i / (N - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const theta = golden * i;
+    points.push({ x: Math.cos(theta) * r, y, z: Math.sin(theta) * r });
+  }
+
+  // Topologie fixe : chaque point relié à ses 3 plus proches voisins, calculé une seule fois
+  const edges = [];
+  for (let i = 0; i < N; i++) {
+    const dists = [];
+    for (let j = 0; j < N; j++) {
+      if (i === j) continue;
+      const dx = points[i].x - points[j].x, dy = points[i].y - points[j].y, dz = points[i].z - points[j].z;
+      dists.push([j, dx * dx + dy * dy + dz * dz]);
+    }
+    dists.sort((a, b) => a[1] - b[1]);
+    for (let k = 0; k < 3; k++) {
+      const j = dists[k][0];
+      const key = i < j ? i + '-' + j : j + '-' + i;
+      if (!edges.some(e => e.key === key)) edges.push({ key, a: i, b: j });
+    }
+  }
+
+  function readColor(varName, fallback) {
+    const v = getComputedStyle(document.body).getPropertyValue(varName).trim();
+    return v || fallback;
+  }
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let angle = 0;
+
+  function renderFrame() {
+    ctx.clearRect(0, 0, size, size);
+
+    let speed = 0.0035, colorVar = '--text-dim', pulsing = false;
+    if (coreWrap.classList.contains('speaking')) { speed = 0.006; colorVar = '--gold'; pulsing = true; }
+    else if (coreWrap.classList.contains('thinking')) { speed = 0.014; colorVar = '--cyan'; }
+    else if (coreWrap.classList.contains('listening')) { speed = 0.006; colorVar = '--cyan-soft'; }
+
+    if (!prefersReduced) angle += speed;
+    const color = readColor(colorVar, '#56727c');
+    const pulseScale = pulsing ? 1 + Math.sin(Date.now() / 1000 * 6) * 0.08 : 1;
+    const cosA = Math.cos(angle), sinA = Math.sin(angle);
+
+    const projected = points.map(p => {
+      const x = p.x * cosA - p.z * sinA;
+      const z = p.x * sinA + p.z * cosA;
+      const depth = (z + 1.6) / 2.6; // profondeur -> taille/opacité apparentes
+      return { x: cx + x * radius * pulseScale, y: cy + p.y * radius * pulseScale, depth };
+    });
+
+    edges.forEach(e => {
+      const a = projected[e.a], b = projected[e.b];
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = Math.min(a.depth, b.depth) * 0.55;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    });
+
+    projected.forEach(p => {
+      ctx.globalAlpha = 0.35 + p.depth * 0.65;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1 + p.depth * 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    if (!prefersReduced) requestAnimationFrame(renderFrame);
+  }
+  renderFrame();
+})();
 
 // --- Real device telemetry where the browser actually allows it ---
 function setArc(id, percent) {
