@@ -167,6 +167,11 @@
   .modal-panel input:focus { outline: none; border-color: var(--cyan); }
   .modal-panel select { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
     font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 10px; border-radius: 6px; margin-bottom: 14px; }
+  .modal-panel.wide { max-width: 440px; }
+  .modal-panel textarea { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
+    font-family: 'Rajdhani', sans-serif; font-size: 13.5px; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px;
+    resize: vertical; }
+  .modal-panel textarea:focus { outline: none; border-color: var(--cyan); }
   .voice-slider-label { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace;
     font-size: 10.5px; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 4px; }
   .voice-slider-label span { color: var(--cyan-soft); font-variant-numeric: tabular-nums; }
@@ -430,6 +435,23 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="memoryModal">
+  <div class="modal-panel wide">
+    <h2>Mémoire des zones</h2>
+    <p>Ce que Visor sait durablement sur toi par zone — injecté dans le contexte quand la zone correspondante est active, sans jamais quitter ce navigateur.</p>
+    <label class="voice-slider-label">Cognition (travail)</label>
+    <textarea id="memCerveau" rows="4" placeholder="Ex : poste actuel, entreprise, parcours..."></textarea>
+    <label class="voice-slider-label">Vitals (santé, relations)</label>
+    <textarea id="memCoeur" rows="3" placeholder="Ex : suivi médical, famille..."></textarea>
+    <label class="voice-slider-label">Horizon (projets futurs)</label>
+    <textarea id="memOeil" rows="3" placeholder="Ex : objectifs, projets en cours..."></textarea>
+    <div class="modal-actions">
+      <button id="memoryCancel">FERMER</button>
+      <button id="memorySave" class="primary">ENREGISTRER</button>
+    </div>
+  </div>
+</div>
+
 <div class="shell">
   <div class="telemetry">
     <div class="brand">V.I.S.O<span>.R</span></div>
@@ -440,6 +462,9 @@
       </button>
       <button id="voiceBtn" class="icon-btn" title="Réglages de la voix" aria-label="Réglages de la voix">
         <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
+      </button>
+      <button id="memoryBtn" class="icon-btn" title="Mémoire des zones" aria-label="Mémoire des zones">
+        <svg viewBox="0 0 24 24"><path d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z"/></svg>
       </button>
       <button id="wakeBtn" class="clear-btn wake-btn" aria-pressed="false"><span class="dot" id="wakeDot"></span>HEY VISOR</button>
       <button id="clearBtn" class="clear-btn">RÉINIT.</button>
@@ -981,11 +1006,50 @@ const ZONE_FOCUS = {
   oeil: " Ici, tu es concentré sur la zone Horizon (projets futurs, objectifs, vision long terme) : aide à clarifier et structurer les ambitions et échéances, sans replonger dans le quotidien immédiat sauf si pertinent."
 };
 const VISOR_GLOBAL_SUFFIX = " Ici en mode Global, tu as accès à l'historique complet de l'utilisateur toutes zones confondues : chaque échange passé est étiqueté [Cognition], [Vitals] ou [Horizon] selon son thème d'origine. Utilise activement ces informations pour faire des liens et des synthèses entre les domaines de sa vie (travail/cognition, santé et relations, projets futurs) dès que c'est pertinent, sans attendre qu'on te le demande explicitement — c'est précisément le rôle du mode Global, par opposition aux zones spécialisées qui restent cloisonnées à leur propre sujet.";
+const ZONE_MEMORY_KEY = 'visor:zone-memory';
+const ZONE_MEMORY_DEFAULTS = {
+  cerveau: "Profil professionnel connu : Steve Lafleche, en poste chez BNP Paribas depuis plus de 11 ans (Paris, Île-de-France). Poste actuel depuis février 2023 : Direction Transformation Organisation Process Expertise Monétique. Parcours interne chez BNP Paribas : Responsable des paiements - Monétique et Espèces (juil. 2021 - févr. 2023) ; Auditeur - Inspection générale (sept. 2019 - juil. 2021) ; Directeur d'agence au Touquet-Paris-Plage (mars 2017 - sept. 2019) ; Chargé de Mission Régionale CAP/DIA (nov. 2014 - mars 2017). Formation : Master 2 Activités bancaires et financières (2013-2014) puis Licence Economics (2010-2013), Université de Picardie Jules Verne. Certifications : Inclusive Leaders (2024), Ambassadeur BDDF (2018). Anglais professionnel, notions de chinois.",
+  coeur: "",
+  oeil: ""
+};
+function getZoneMemory() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(ZONE_MEMORY_KEY));
+    return Object.assign({}, ZONE_MEMORY_DEFAULTS, stored || {});
+  } catch (e) { return Object.assign({}, ZONE_MEMORY_DEFAULTS); }
+}
+function setZoneMemory(mem) { try { localStorage.setItem(ZONE_MEMORY_KEY, JSON.stringify(mem)); } catch (e) {} }
 function buildSystemPrompt(scopedZone) {
-  if (scopedZone && ZONE_FOCUS[scopedZone]) return VISOR_BASE_PROMPT + ZONE_FOCUS[scopedZone];
+  if (scopedZone && ZONE_FOCUS[scopedZone]) {
+    let p = VISOR_BASE_PROMPT + ZONE_FOCUS[scopedZone];
+    const mem = getZoneMemory()[scopedZone];
+    if (mem && mem.trim()) p += " Mémoire connue sur l'utilisateur pour cette zone (à utiliser naturellement dans la conversation, sans la réciter mécaniquement) : " + mem.trim();
+    return p;
+  }
   return VISOR_BASE_PROMPT + VISOR_GLOBAL_SUFFIX;
 }
 const ZONE_LABELS = { cerveau: 'Cognition', coeur: 'Vitals', oeil: 'Horizon' };
+
+// --- Modal mémoire des zones ---
+(function initMemoryUI() {
+  const memoryBtn = document.getElementById('memoryBtn');
+  const memoryModal = document.getElementById('memoryModal');
+  if (!memoryBtn) return;
+  const fields = { cerveau: document.getElementById('memCerveau'), coeur: document.getElementById('memCoeur'), oeil: document.getElementById('memOeil') };
+  memoryBtn.addEventListener('click', () => {
+    const mem = getZoneMemory();
+    Object.keys(fields).forEach(z => { fields[z].value = mem[z] || ''; });
+    memoryModal.classList.add('open');
+  });
+  document.getElementById('memoryCancel').addEventListener('click', () => memoryModal.classList.remove('open'));
+  document.getElementById('memorySave').addEventListener('click', () => {
+    const mem = {};
+    Object.keys(fields).forEach(z => { mem[z] = fields[z].value; });
+    setZoneMemory(mem);
+    memoryModal.classList.remove('open');
+    addMsg('sys', 'Mémoire des zones enregistrée.');
+  });
+})();
 
 async function queryModel(prompt, zone) {
   setState('thinking', 'busy', 'ANALYSE', 'Je réfléchis...');
