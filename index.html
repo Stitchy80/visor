@@ -25,6 +25,12 @@
     --text-dim: #56727c;
   }
 
+  /* Sélectionner une zone reteinte tout le HUD (pas juste l'icône) dans sa couleur —
+     mark-mode (réflexion) est déclaré après et gagne donc pendant que Visor réfléchit. */
+  body.zone-cognition { --cyan: var(--gold); --cyan-soft: #ffe29b; --cyan-dim: var(--gold-dim); --cyan-rgb: 255,206,84; }
+  body.zone-vitals { --cyan: var(--err); --cyan-soft: #ff9aa5; --cyan-dim: #4a1216; --cyan-rgb: 255,77,94; }
+  body.zone-horizon { --cyan: var(--neon-green); --cyan-soft: #9dffc9; --cyan-dim: #0d4a2a; --cyan-rgb: 57,255,140; }
+
   body.mark-mode {
     --cyan: #ff3b30;
     --cyan-soft: #ff9d8a;
@@ -95,8 +101,8 @@
     font-family: 'JetBrains Mono', monospace; font-size: 7.5px; color: var(--text-dim);
     padding: 0 8px 7px; letter-spacing: 0.5px; white-space: nowrap;
   }
-  .bp1 { top: 19%; left: 8%; width: 96px; }
-  .bp2 { top: 19%; right: 9%; width: 96px; }
+  .bp1 { top: 27%; left: 8%; width: 96px; }
+  .bp2 { top: 27%; right: 9%; width: 96px; }
   .bp3 { bottom: 31%; left: 9%; width: 96px; }
   .bp4 { bottom: 31%; right: 8%; width: 96px; }
   .bp-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(var(--cyan-rgb),0.3); }
@@ -159,7 +165,13 @@
   .modal-panel input { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
     font-family: 'JetBrains Mono', monospace; font-size: 12.5px; padding: 9px 10px; border-radius: 6px; margin-bottom: 12px; }
   .modal-panel input:focus { outline: none; border-color: var(--cyan); }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-panel select { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 10px; border-radius: 6px; margin-bottom: 14px; }
+  .voice-slider-label { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 4px; }
+  .voice-slider-label span { color: var(--cyan-soft); font-variant-numeric: tabular-nums; }
+  .modal-panel input[type="range"] { width: 100%; margin-bottom: 14px; accent-color: var(--cyan); height: 4px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
   .modal-actions button { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px;
     padding: 7px 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--cyan-dim); background: none; color: var(--text-dim); }
   .modal-actions button.primary { border-color: var(--cyan); color: var(--cyan-soft); }
@@ -169,20 +181,16 @@
   .dot.speak { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
   .dot.err { background: var(--err); box-shadow: 0 0 6px var(--err); }
 
-  /* thematic zones — icônes seules, nichées entre le noyau et les anneaux ; le libellé
-     n'apparaît qu'en infobulle (title) au survol. Filtrage réel du transcript en dessous. */
+  /* thematic zones — icônes seules en rangée sous la télémétrie (l'ancien nichage dans
+     l'anneau était trop à l'étroit) ; le libellé n'apparaît qu'en infobulle au survol. */
+  .zone-row { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-shrink: 0; }
   .zone-orbit {
-    position: absolute; z-index: 7; width: 25px; height: 25px; border-radius: 50%;
-    transform: translate(-50%, -50%);
+    z-index: 7; width: 30px; height: 30px; border-radius: 50%;
     background: rgba(8,16,20,0.75); border: 1px solid var(--line); cursor: pointer;
     display: flex; align-items: center; justify-content: center; color: var(--text-dim);
     transition: all 0.25s ease; backdrop-filter: blur(2px);
   }
-  .zone-orbit.ne { top: 70px; left: 192px; }
-  .zone-orbit.se { top: 192px; left: 192px; }
-  .zone-orbit.sw { top: 192px; left: 70px; }
-  .zone-orbit.nw { top: 70px; left: 70px; }
-  .zone-orbit svg { width: 16px; height: 16px; color: inherit; overflow: visible; }
+  .zone-orbit svg { width: 17px; height: 17px; color: inherit; overflow: visible; }
   .zone-orbit.active { color: inherit; box-shadow: 0 0 10px currentColor; }
   .zone-orbit.active svg { filter: drop-shadow(0 0 4px currentColor); }
   .zone-orbit[data-zone="cerveau"].active { border-color: var(--gold); color: var(--gold); }
@@ -280,14 +288,14 @@
     font-weight: 700; text-align: center; line-height: 1.1; }
   .satellite-label small { display: block; font-size: 5.5px; color: var(--text-dim); font-weight: 400; letter-spacing: 0.5px; }
 
-  .core-glow { position: absolute; inset: 53px; border-radius: 50%;
+  .core-glow { position: absolute; inset: 20px; border-radius: 50%;
     background: radial-gradient(circle, var(--cyan-dim) 0%, transparent 70%); filter: blur(6px); transition: all 0.4s ease; }
-  .core-center { position: absolute; inset: 61px; border-radius: 50%;
+  .core-center { position: absolute; inset: 28px; border-radius: 50%;
     background: radial-gradient(circle at 38% 32%, #0e2830, #050b0d 72%);
     border: 1px solid var(--cyan-dim); display: flex; align-items: center; justify-content: center;
     transition: all 0.4s ease;
     box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 0 rgba(var(--cyan-rgb),0), inset 0 2px 6px rgba(255,255,255,0.04); }
-  .core-canvas { width: 128px; height: 128px; position: relative; z-index: 2; }
+  .core-canvas { width: 190px; height: 190px; position: relative; z-index: 2; }
 
   @media (prefers-reduced-motion: reduce) {
     .core-pulse, .core-inner-ring,
@@ -397,6 +405,23 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="voiceModal">
+  <div class="modal-panel">
+    <h2>Voix de Visor</h2>
+    <p>Il n'existe pas de "voix J.A.R.V.I.S" officielle dans les navigateurs — choisis parmi les voix installées sur cet appareil et ajuste vitesse/tonalité pour t'en rapprocher. Utilise "Tester" pour juger par toi-même, aucun appel à Claude n'est fait.</p>
+    <select id="voiceSelect"></select>
+    <label class="voice-slider-label">Vitesse <span id="voiceRateVal">0.95</span></label>
+    <input type="range" id="voiceRate" min="0.7" max="1.3" step="0.01" value="0.95">
+    <label class="voice-slider-label">Tonalité <span id="voicePitchVal">0.85</span></label>
+    <input type="range" id="voicePitch" min="0.6" max="1.3" step="0.01" value="0.85">
+    <div class="modal-actions">
+      <button id="voiceTest">TESTER</button>
+      <button id="voiceCancel">FERMER</button>
+      <button id="voiceSave" class="primary">ENREGISTRER</button>
+    </div>
+  </div>
+</div>
+
 <div class="shell">
   <div class="telemetry">
     <div class="brand">V.I.S.O<span>.R</span></div>
@@ -405,10 +430,47 @@
       <button id="apiKeyBtn" class="icon-btn" title="Configurer la clé API" aria-label="Configurer la clé API">
         <svg viewBox="0 0 24 24"><path d="M14 2a6 6 0 00-5.66 8H8L2 16v4h4l1-1v-2h2v-2h2l1.66-1.66A6 6 0 1014 2zm2 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
       </button>
+      <button id="voiceBtn" class="icon-btn" title="Réglages de la voix" aria-label="Réglages de la voix">
+        <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
+      </button>
       <button id="wakeBtn" class="clear-btn wake-btn" aria-pressed="false"><span class="dot" id="wakeDot"></span>HEY VISOR</button>
       <button id="clearBtn" class="clear-btn">RÉINIT.</button>
       <span><span class="dot" id="statusDot"></span><span id="statusText">VEILLE</span></span>
     </div>
+  </div>
+
+  <div class="zone-row">
+    <button class="zone-orbit" data-zone="cerveau" title="Cognition">
+      <svg viewBox="0 0 24 24">
+        <path class="brain-shape" d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z" fill="currentColor"/>
+        <circle class="neuron" cx="7.2" cy="7" r="1"/>
+        <circle class="neuron" cx="16.3" cy="7.5" r="1"/>
+        <circle class="neuron" cx="11.5" cy="12" r="1"/>
+        <circle class="neuron" cx="6.5" cy="16" r="1"/>
+        <circle class="neuron" cx="16.8" cy="15.2" r="1"/>
+      </svg>
+    </button>
+    <button class="zone-orbit" data-zone="coeur" title="Vitals">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 21s-7.5-5.1-10-9.3C.4 8.6 1.8 5 5.4 4.2c2-.4 3.9.5 5 2.1 1.1-1.6 3-2.5 5-2.1C19 5 20.4 8.6 18.7 11.7 16.2 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path class="ekg-line" d="M4 12h3l1.5-3 2 5 1.5-3H16" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
+    <button class="zone-orbit" data-zone="oeil" title="Horizon">
+      <svg viewBox="0 0 24 24">
+        <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <circle class="iris-sweep" cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 22"/>
+        <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
+        <circle class="eye-pupil-dot" cx="12" cy="12" r="1.5" fill="currentColor"/>
+      </svg>
+    </button>
+    <button class="zone-orbit" data-zone="general" title="Global">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M2.5 12h19" stroke="currentColor" stroke-width="1.2"/>
+        <path class="meridian" d="M12 2.5c2.6 2.6 4 6 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-6-4-9.5s1.4-6.9 4-9.5z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </button>
   </div>
 
   <div class="stage">
@@ -420,37 +482,6 @@
         <div class="radar-sweep"></div>
         <div class="compass-tick n">000</div><div class="compass-tick e">090</div>
         <div class="compass-tick s">180</div><div class="compass-tick w">270</div>
-        <button class="zone-orbit ne" data-zone="cerveau" title="Cognition">
-          <svg viewBox="0 0 24 24">
-            <path class="brain-shape" d="M9.5 2A3.5 3.5 0 006 5.5v.09A3.5 3.5 0 003.5 9v1.5a3 3 0 000 6v.5A3.5 3.5 0 007 20.5a2.5 2.5 0 002.5-2.5V4.5A2.5 2.5 0 009.5 2zM14.5 2A2.5 2.5 0 0012 4.5V18a2.5 2.5 0 002.5 2.5A3.5 3.5 0 0018 17v-.5a3 3 0 000-6V9a3.5 3.5 0 00-2.5-3.41V5.5A3.5 3.5 0 0014.5 2z" fill="currentColor"/>
-            <circle class="neuron" cx="7.2" cy="7" r="1"/>
-            <circle class="neuron" cx="16.3" cy="7.5" r="1"/>
-            <circle class="neuron" cx="11.5" cy="12" r="1"/>
-            <circle class="neuron" cx="6.5" cy="16" r="1"/>
-            <circle class="neuron" cx="16.8" cy="15.2" r="1"/>
-          </svg>
-        </button>
-        <button class="zone-orbit se" data-zone="coeur" title="Vitals">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 21s-7.5-5.1-10-9.3C.4 8.6 1.8 5 5.4 4.2c2-.4 3.9.5 5 2.1 1.1-1.6 3-2.5 5-2.1C19 5 20.4 8.6 18.7 11.7 16.2 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-            <path class="ekg-line" d="M4 12h3l1.5-3 2 5 1.5-3H16" fill="none" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-        </button>
-        <button class="zone-orbit sw" data-zone="oeil" title="Horizon">
-          <svg viewBox="0 0 24 24">
-            <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7-11-7-11-7z" fill="none" stroke="currentColor" stroke-width="1.4"/>
-            <circle class="iris-sweep" cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 22"/>
-            <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
-            <circle class="eye-pupil-dot" cx="12" cy="12" r="1.5" fill="currentColor"/>
-          </svg>
-        </button>
-        <button class="zone-orbit nw" data-zone="general" title="Global">
-          <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M2.5 12h19" stroke="currentColor" stroke-width="1.2"/>
-            <path class="meridian" d="M12 2.5c2.6 2.6 4 6 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-6-4-9.5s1.4-6.9 4-9.5z" fill="none" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-        </button>
         <div class="satellite pos-1">
           <svg viewBox="0 0 54 54"><circle class="satellite-arc" cx="27" cy="27" r="22" stroke-dasharray="103 138" id="arcPwr"/></svg>
           <div class="satellite-label" id="valPwr">100<small>PWR</small></div>
@@ -468,19 +499,19 @@
           <div class="satellite-label" id="valNet" style="font-size:6.5px">--<small>NET</small></div>
         </div>
         <svg viewBox="0 0 240 240">
-          <circle class="ring ring-outer" cx="120" cy="120" r="96" stroke-dasharray="2 6"/>
-          <circle class="ring ticks ring-outer" cx="120" cy="120" r="84" stroke-dasharray="1 11.5"/>
-          <circle class="ring ring-mid" cx="120" cy="120" r="72" stroke-dasharray="6 4"/>
-          <circle class="ring ring-inner" cx="120" cy="120" r="68" stroke-dasharray="1 5"/>
-          <circle class="ring-seg" cx="120" cy="120" r="102" stroke-dasharray="4 3 14 3 4 3 20 3"/>
-          <circle class="ring-seg2" cx="120" cy="120" r="78" stroke-dasharray="30 8 10 8"/>
+          <circle class="ring ring-outer" cx="120" cy="120" r="116" stroke-dasharray="2 6"/>
+          <circle class="ring ticks ring-outer" cx="120" cy="120" r="111" stroke-dasharray="1 11.5"/>
+          <circle class="ring ring-mid" cx="120" cy="120" r="106" stroke-dasharray="6 4"/>
+          <circle class="ring ring-inner" cx="120" cy="120" r="98" stroke-dasharray="1 5"/>
+          <circle class="ring-seg" cx="120" cy="120" r="122" stroke-dasharray="4 3 14 3 4 3 20 3"/>
+          <circle class="ring-seg2" cx="120" cy="120" r="112" stroke-dasharray="30 8 10 8"/>
         </svg>
         <div class="core-glow"></div>
         <div class="core-center">
           <div class="core-inner-ring"></div>
           <div class="core-inner-ring r2"></div>
           <div class="core-pulse"></div>
-          <canvas class="core-canvas" id="coreCanvas" width="256" height="256"></canvas>
+          <canvas class="core-canvas" id="coreCanvas" width="380" height="380"></canvas>
         </div>
       </div>
       <div class="state-label" id="stateLabel">Appuie pour parler</div>
@@ -603,6 +634,12 @@ function applyZoneFilter() {
   document.getElementById('hudZone').textContent = activeZone ? activeZone.toUpperCase() : 'TOUTES';
 }
 
+const ZONE_BODY_CLASS = { cerveau: 'zone-cognition', coeur: 'zone-vitals', oeil: 'zone-horizon' };
+function applyZoneTheme(zone) {
+  document.body.classList.remove('zone-cognition', 'zone-vitals', 'zone-horizon');
+  if (zone && ZONE_BODY_CLASS[zone]) document.body.classList.add(ZONE_BODY_CLASS[zone]);
+}
+
 document.querySelectorAll('.zone-orbit').forEach(chip => {
   chip.addEventListener('click', () => {
     const z = chip.dataset.zone;
@@ -613,6 +650,7 @@ document.querySelectorAll('.zone-orbit').forEach(chip => {
       activeZone = z;
       document.querySelectorAll('.zone-orbit').forEach(c => c.classList.toggle('active', c === chip));
     }
+    applyZoneTheme(activeZone);
     applyZoneFilter();
   });
 });
@@ -787,26 +825,99 @@ async function handleUserMessage(text) {
 }
 
 // --- Voice synthesis ---
+const VOICE_PREF_KEY = 'visor:voice-prefs';
+function getVoicePrefs() { try { return JSON.parse(localStorage.getItem(VOICE_PREF_KEY)) || {}; } catch (e) { return {}; } }
+function setVoicePrefs(p) { try { localStorage.setItem(VOICE_PREF_KEY, JSON.stringify(p)); } catch (e) {} }
+
+let availableVoices = [];
 let frenchVoice = null;
 function loadVoices() {
   if (!window.speechSynthesis) return;
-  const voices = window.speechSynthesis.getVoices();
-  frenchVoice = voices.find(v => v.lang === 'fr-FR') || voices.find(v => v.lang.startsWith('fr')) || null;
+  availableVoices = window.speechSynthesis.getVoices();
+  frenchVoice = availableVoices.find(v => v.lang === 'fr-FR') || availableVoices.find(v => v.lang.startsWith('fr')) || null;
+}
+function pickVoice(voiceURI) {
+  if (voiceURI) {
+    const match = availableVoices.find(v => v.voiceURI === voiceURI);
+    if (match) return match;
+  }
+  return frenchVoice;
+}
+function buildUtterance(text, overrideOpts) {
+  const prefs = Object.assign({ rate: 0.95, pitch: 0.85 }, getVoicePrefs(), overrideOpts || {});
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR';
+  const v = pickVoice(prefs.voiceURI);
+  if (v) u.voice = v;
+  u.rate = prefs.rate; u.pitch = prefs.pitch;
+  return u;
 }
 if (window.speechSynthesis) {
   loadVoices();
-  window.speechSynthesis.onvoiceschanged = () => { loadVoices(); if (typeof updateMicPanel === 'function') updateMicPanel(); };
+  window.speechSynthesis.onvoiceschanged = () => {
+    loadVoices();
+    if (typeof updateMicPanel === 'function') updateMicPanel();
+    if (typeof populateVoiceSelect === 'function') populateVoiceSelect();
+  };
 }
 function speak(text) {
   if (!window.speechSynthesis) { setState(null, '', 'VEILLE', 'Appuie pour parler'); return; }
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR'; if (frenchVoice) u.voice = frenchVoice; u.rate = 1.02;
+  const u = buildUtterance(text);
   u.onstart = () => setState('speaking', 'speak', 'RÉPONSE', 'Visor parle...');
   u.onend = () => setState(null, '', 'VEILLE', 'Appuie pour parler');
   u.onerror = () => setState(null, '', 'VEILLE', 'Appuie pour parler');
   setTimeout(() => window.speechSynthesis.speak(u), 50);
 }
+function testVoice(text, overrideOpts) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(buildUtterance(text, overrideOpts));
+}
+
+// --- Réglages de voix (menu + aperçu) ---
+const voiceBtn = document.getElementById('voiceBtn');
+const voiceModal = document.getElementById('voiceModal');
+const voiceSelect = document.getElementById('voiceSelect');
+const voiceRate = document.getElementById('voiceRate');
+const voicePitch = document.getElementById('voicePitch');
+const voiceRateVal = document.getElementById('voiceRateVal');
+const voicePitchVal = document.getElementById('voicePitchVal');
+
+function populateVoiceSelect() {
+  if (!voiceSelect) return;
+  const prefs = getVoicePrefs();
+  voiceSelect.innerHTML = '';
+  availableVoices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI;
+    opt.textContent = v.name + ' (' + v.lang + ')';
+    if (v.voiceURI === prefs.voiceURI || (!prefs.voiceURI && v === frenchVoice)) opt.selected = true;
+    voiceSelect.appendChild(opt);
+  });
+}
+(function initVoiceUI() {
+  if (!voiceBtn) return;
+  const prefs = getVoicePrefs();
+  voiceRate.value = prefs.rate ?? 0.95;
+  voicePitch.value = prefs.pitch ?? 0.85;
+  voiceRateVal.textContent = voiceRate.value;
+  voicePitchVal.textContent = voicePitch.value;
+  voiceRate.addEventListener('input', () => voiceRateVal.textContent = voiceRate.value);
+  voicePitch.addEventListener('input', () => voicePitchVal.textContent = voicePitch.value);
+  voiceBtn.addEventListener('click', () => { populateVoiceSelect(); voiceModal.classList.add('open'); });
+  document.getElementById('voiceCancel').addEventListener('click', () => voiceModal.classList.remove('open'));
+  document.getElementById('voiceSave').addEventListener('click', () => {
+    setVoicePrefs({ voiceURI: voiceSelect.value, rate: parseFloat(voiceRate.value), pitch: parseFloat(voicePitch.value) });
+    voiceModal.classList.remove('open');
+    addMsg('sys', 'Préférences de voix enregistrées.');
+  });
+  document.getElementById('voiceTest').addEventListener('click', () => {
+    testVoice("Bien sûr. Parce qu'apparemment, appuyer sur un bouton était beaucoup trop simple pour toi.", {
+      voiceURI: voiceSelect.value, rate: parseFloat(voiceRate.value), pitch: parseFloat(voicePitch.value)
+    });
+  });
+})();
 
 // --- Claude API ---
 // Deux modes, essayés dans l'ordre :
@@ -850,7 +961,7 @@ async function queryModel(prompt, zone) {
   try {
     const res = await callAnthropic({
       model: "claude-sonnet-4-6", max_tokens: 1000,
-      system: "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.",
+      system: "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal à la personnalité affirmée, dans l'esprit de J.A.R.V.I.S. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Ton ton est pince-sans-rire et légèrement ironique : tu n'hésites pas à taquiner gentiment l'utilisateur avec un sarcasme mesuré et une pointe d'humour sec, sans jamais être blessant, méprisant ou irrespectueux — la taquinerie reste affectueuse, jamais froide. Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.",
       messages: history.map(m => ({ role: m.role, content: m.content }))
     });
     if (!res.ok) {
@@ -955,7 +1066,7 @@ updateMicPanel();
   const ctx = canvas.getContext('2d');
   const size = canvas.width;
   const cx = size / 2, cy = size / 2;
-  const radius = 80;
+  const radius = 119;
   const N = 42;
 
   // Répartition à peu près uniforme sur une sphère (spirale de Fibonacci)
