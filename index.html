@@ -158,7 +158,7 @@
   .modal-actions button.primary { border-color: var(--cyan); color: var(--cyan-soft); }
   .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-right: 5px; }
   .dot.live { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-  .dot.busy { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
+  .dot.busy { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
   .dot.speak { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
   .dot.err { background: var(--err); box-shadow: 0 0 6px var(--err); }
 
@@ -244,41 +244,10 @@
     border: 1px solid var(--cyan-dim); display: flex; align-items: center; justify-content: center;
     transition: all 0.4s ease;
     box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 0 rgba(var(--cyan-rgb),0), inset 0 2px 6px rgba(255,255,255,0.04); }
-  .core-center svg.icon.eye { width: 60px; height: 60px; overflow: visible; position: relative; z-index: 2; }
-  .eye-blades { transform-origin: 50px 50px; animation: spin 34s linear infinite; }
-  .eye-blades line { stroke: var(--text-dim); stroke-width: 2; stroke-linecap: round; transition: stroke 0.3s ease; }
-  .eye-iris-ring { fill: none; stroke: var(--cyan-dim); stroke-width: 1.3; transition: stroke 0.3s ease; }
-  .eye-pupil { fill: #050b0d; stroke: var(--text-dim); stroke-width: 1.6; transform-origin: 50px 50px;
-    transition: stroke 0.3s ease, transform 0.45s cubic-bezier(.3,0,.2,1); }
-  .eye-pupil-core { fill: var(--text-dim); transform-origin: 50px 50px; transition: fill 0.3s ease;
-    animation: pupil-live 3.6s ease-in-out infinite; }
-  @keyframes pupil-live { 0%, 100% { transform: scale(0.9); opacity: 0.75; } 50% { transform: scale(1.08); opacity: 1; } }
-  .eye-lid { fill: #050b0d; }
-  .eye-lid-top { transform-origin: 50px 0px; animation: blink 7.5s ease-in-out infinite; }
-  .eye-lid-bottom { transform-origin: 50px 100px; animation: blink 7.5s ease-in-out infinite; }
-  @keyframes blink { 0%, 92%, 100% { transform: scaleY(0); } 95%, 96.5% { transform: scaleY(1); } }
-
-  .core-wrap.listening .eye-pupil { stroke: var(--cyan); transform: scale(1.14); }
-  .core-wrap.listening .eye-iris-ring { stroke: var(--cyan); }
-  .core-wrap.listening .eye-pupil-core { fill: var(--cyan-soft); }
-  .core-wrap.listening .eye-blades line { stroke: var(--cyan-soft); }
-  .core-wrap.listening .eye-blades { animation-duration: 10s; }
-
-  .core-wrap.thinking .eye-pupil { stroke: var(--violet); transform: scale(0.82); }
-  .core-wrap.thinking .eye-iris-ring { stroke: var(--violet); }
-  .core-wrap.thinking .eye-pupil-core { fill: var(--violet); animation-duration: 0.9s; }
-  .core-wrap.thinking .eye-blades line { stroke: var(--violet); }
-  .core-wrap.thinking .eye-blades { animation-duration: 2.4s; }
-
-  .core-wrap.speaking .eye-pupil { stroke: var(--gold); transform: scale(1.05); animation: pupil-speak 0.5s ease-in-out infinite; }
-  .core-wrap.speaking .eye-iris-ring { stroke: var(--gold); }
-  .core-wrap.speaking .eye-pupil-core { fill: var(--gold); }
-  .core-wrap.speaking .eye-blades line { stroke: var(--gold); }
-  .core-wrap.speaking .eye-blades { animation-duration: 6s; }
-  @keyframes pupil-speak { 0%, 100% { transform: scale(0.98); } 50% { transform: scale(1.16); } }
+  .core-canvas { width: 100px; height: 100px; position: relative; z-index: 2; }
 
   @media (prefers-reduced-motion: reduce) {
-    .eye-blades, .eye-lid-top, .eye-lid-bottom, .eye-pupil-core, .core-pulse, .core-inner-ring,
+    .core-pulse, .core-inner-ring,
     .radar-sweep, .ring-outer, .ring-mid, .ring-inner, .ring-seg, .ring-seg2 { animation: none !important; }
   }
 
@@ -291,7 +260,6 @@
 
   .core-wrap.listening .core-center { border-color: var(--cyan); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 34px 4px rgba(var(--cyan-rgb),0.5); }
   .core-wrap.listening .core-glow { background: radial-gradient(circle, var(--cyan) 0%, transparent 70%); opacity: 0.9; }
-  .core-wrap.listening .core-center svg.icon { fill: var(--cyan-soft); }
   .core-wrap.listening .ring-inner { animation-duration: 2.8s; }
   .core-wrap.listening .ring-mid { animation-duration: 5.5s; }
   .core-wrap.listening .radar-sweep { animation-duration: 1.3s; opacity: 1; }
@@ -299,19 +267,17 @@
   .core-wrap.listening .core-pulse { animation-duration: 0.95s; background: radial-gradient(circle, rgba(var(--cyan-rgb),0.65) 0%, transparent 65%); }
   .core-wrap.listening .core-inner-ring { animation-duration: 1.8s; border-color: var(--cyan); }
 
-  .core-wrap.thinking .core-center { border-color: var(--violet); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 32px 4px rgba(180,107,255,0.45); }
-  .core-wrap.thinking .core-glow { background: radial-gradient(circle, var(--violet) 0%, transparent 70%); opacity: 0.8; }
-  .core-wrap.thinking .core-center svg.icon { fill: var(--violet); }
+  .core-wrap.thinking .core-center { border-color: var(--cyan); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 32px 4px rgba(var(--cyan-rgb),0.45); }
+  .core-wrap.thinking .core-glow { background: radial-gradient(circle, var(--cyan) 0%, transparent 70%); opacity: 0.8; }
   .core-wrap.thinking .ring-outer { animation-duration: 3.2s; }
   .core-wrap.thinking .ring-inner { animation-duration: 1.4s; }
-  .core-wrap.thinking .radar-sweep { background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(180,107,255,0.35) 340deg, rgba(180,107,255,0.7) 358deg, transparent 360deg); animation-duration: 0.85s; }
-  .core-wrap.thinking .bracket { border-color: var(--violet); }
-  .core-wrap.thinking .core-pulse { animation-duration: 0.65s; background: radial-gradient(circle, rgba(180,107,255,0.6) 0%, transparent 65%); }
-  .core-wrap.thinking .core-inner-ring { animation-duration: 1s; border-color: var(--violet); }
+  .core-wrap.thinking .radar-sweep { background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(var(--cyan-rgb),0.35) 340deg, rgba(var(--cyan-rgb),0.7) 358deg, transparent 360deg); animation-duration: 0.85s; }
+  .core-wrap.thinking .bracket { border-color: var(--cyan); }
+  .core-wrap.thinking .core-pulse { animation-duration: 0.65s; background: radial-gradient(circle, rgba(var(--cyan-rgb),0.6) 0%, transparent 65%); }
+  .core-wrap.thinking .core-inner-ring { animation-duration: 1s; border-color: var(--cyan); }
 
   .core-wrap.speaking .core-center { border-color: var(--gold); box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 34px 4px rgba(255,206,84,0.45); }
   .core-wrap.speaking .core-glow { background: radial-gradient(circle, var(--gold) 0%, transparent 70%); opacity: 0.85; }
-  .core-wrap.speaking .core-center svg.icon { fill: var(--gold); }
   .core-wrap.speaking .ring-mid { animation-duration: 3.6s; }
   .core-wrap.speaking .radar-sweep { background: conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(255,206,84,0.35) 340deg, rgba(255,206,84,0.7) 358deg, transparent 360deg); }
   .core-wrap.speaking .bracket { border-color: var(--gold); }
@@ -326,7 +292,7 @@
     animation: eq-idle 2.4s ease-in-out infinite; transition: background 0.3s ease; }
   @keyframes eq-idle { 0%,100% { height: 3px; } 50% { height: 7px; } }
   .core-wrap.listening ~ .equalizer span { animation: eq-listen 0.85s ease-in-out infinite; opacity: 0.95; background: var(--cyan); }
-  .core-wrap.thinking ~ .equalizer span { animation: eq-listen 0.5s ease-in-out infinite; opacity: 0.95; background: var(--violet); }
+  .core-wrap.thinking ~ .equalizer span { animation: eq-listen 0.5s ease-in-out infinite; opacity: 0.95; background: var(--cyan); }
   .core-wrap.speaking ~ .equalizer span { animation: eq-speak 0.5s ease-in-out infinite; opacity: 0.95; background: var(--gold); }
   .equalizer span:nth-child(1) { animation-delay: 0s; } .equalizer span:nth-child(2) { animation-delay: 0.1s; }
   .equalizer span:nth-child(3) { animation-delay: 0.2s; } .equalizer span:nth-child(4) { animation-delay: 0.3s; }
@@ -447,27 +413,7 @@
           <div class="core-inner-ring"></div>
           <div class="core-inner-ring r2"></div>
           <div class="core-pulse"></div>
-          <svg class="icon eye" viewBox="0 0 100 100">
-            <g class="eye-blades">
-              <line x1="50" y1="12" x2="50" y2="21"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(30 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(60 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(90 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(120 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(150 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(180 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(210 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(240 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(270 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(300 50 50)"/>
-              <line x1="50" y1="12" x2="50" y2="21" transform="rotate(330 50 50)"/>
-            </g>
-            <circle class="eye-iris-ring" cx="50" cy="50" r="30"/>
-            <circle class="eye-pupil" cx="50" cy="50" r="13.5"/>
-            <circle class="eye-pupil-core" cx="50" cy="50" r="3.4"/>
-            <rect class="eye-lid eye-lid-top" x="4" y="0" width="92" height="52"/>
-            <rect class="eye-lid eye-lid-bottom" x="4" y="48" width="92" height="52"/>
-          </svg>
+          <canvas class="core-canvas" id="coreCanvas" width="200" height="200"></canvas>
         </div>
       </div>
       <div class="state-label" id="stateLabel">Appuie pour parler</div>
@@ -871,6 +817,96 @@ function initBgBars(id, count) {
   tick(); setInterval(tick, 800 + Math.random() * 500);
 }
 initBgBars('bgBars1', 10); initBgBars('bgBars2', 8); initBgBars('bgBars3', 9); initBgBars('bgBars4', 7);
+
+// --- Sphère de particules réactive au centre du noyau (remplace l'icône statique) ---
+(function initCoreSphere() {
+  const canvas = document.getElementById('coreCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const cx = size / 2, cy = size / 2;
+  const radius = 62;
+  const N = 42;
+
+  // Répartition à peu près uniforme sur une sphère (spirale de Fibonacci)
+  const points = [];
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < N; i++) {
+    const y = 1 - (i / (N - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const theta = golden * i;
+    points.push({ x: Math.cos(theta) * r, y, z: Math.sin(theta) * r });
+  }
+
+  // Topologie fixe : chaque point relié à ses 3 plus proches voisins, calculé une seule fois
+  const edges = [];
+  for (let i = 0; i < N; i++) {
+    const dists = [];
+    for (let j = 0; j < N; j++) {
+      if (i === j) continue;
+      const dx = points[i].x - points[j].x, dy = points[i].y - points[j].y, dz = points[i].z - points[j].z;
+      dists.push([j, dx * dx + dy * dy + dz * dz]);
+    }
+    dists.sort((a, b) => a[1] - b[1]);
+    for (let k = 0; k < 3; k++) {
+      const j = dists[k][0];
+      const key = i < j ? i + '-' + j : j + '-' + i;
+      if (!edges.some(e => e.key === key)) edges.push({ key, a: i, b: j });
+    }
+  }
+
+  function readColor(varName, fallback) {
+    const v = getComputedStyle(document.body).getPropertyValue(varName).trim();
+    return v || fallback;
+  }
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let angle = 0;
+
+  function renderFrame() {
+    ctx.clearRect(0, 0, size, size);
+
+    let speed = 0.0035, colorVar = '--text-dim', pulsing = false;
+    if (coreWrap.classList.contains('speaking')) { speed = 0.006; colorVar = '--gold'; pulsing = true; }
+    else if (coreWrap.classList.contains('thinking')) { speed = 0.014; colorVar = '--cyan'; }
+    else if (coreWrap.classList.contains('listening')) { speed = 0.006; colorVar = '--cyan-soft'; }
+
+    if (!prefersReduced) angle += speed;
+    const color = readColor(colorVar, '#56727c');
+    const pulseScale = pulsing ? 1 + Math.sin(Date.now() / 1000 * 6) * 0.08 : 1;
+    const cosA = Math.cos(angle), sinA = Math.sin(angle);
+
+    const projected = points.map(p => {
+      const x = p.x * cosA - p.z * sinA;
+      const z = p.x * sinA + p.z * cosA;
+      const depth = (z + 1.6) / 2.6; // profondeur -> taille/opacité apparentes
+      return { x: cx + x * radius * pulseScale, y: cy + p.y * radius * pulseScale, depth };
+    });
+
+    edges.forEach(e => {
+      const a = projected[e.a], b = projected[e.b];
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = Math.min(a.depth, b.depth) * 0.55;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    });
+
+    projected.forEach(p => {
+      ctx.globalAlpha = 0.35 + p.depth * 0.65;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1 + p.depth * 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    if (!prefersReduced) requestAnimationFrame(renderFrame);
+  }
+  renderFrame();
+})();
 
 // --- Real device telemetry where the browser actually allows it ---
 function setArc(id, percent) {
