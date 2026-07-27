@@ -134,6 +134,28 @@
   .wake-btn.armed .dot { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); animation: wake-breathe 2.2s ease-in-out infinite; }
   .wake-btn.armed.hearing .dot { background: var(--gold); box-shadow: 0 0 6px var(--gold); animation: none; }
   @keyframes wake-breathe { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  .icon-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: none;
+    color: var(--text-dim); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .icon-btn svg { width: 13px; height: 13px; fill: currentColor; }
+  .icon-btn:active { border-color: var(--cyan); color: var(--cyan-soft); }
+  .icon-btn.needs-key { border-color: var(--err); color: var(--err); animation: wake-breathe 2.4s ease-in-out infinite; }
+
+  .modal-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(3,5,7,0.78); backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center; padding: 24px; }
+  .modal-overlay.open { display: flex; }
+  .modal-panel { width: 100%; max-width: 340px; background: var(--panel); backdrop-filter: blur(7px);
+    border: 1px solid var(--cyan-dim); border-radius: 10px; padding: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+  .modal-panel h2 { font-family: 'Electrolize', sans-serif; font-size: 12.5px; letter-spacing: 1.5px;
+    color: var(--cyan-soft); text-transform: uppercase; margin-bottom: 10px; }
+  .modal-panel p { font-family: 'Rajdhani', sans-serif; font-size: 13.5px; color: var(--text-dim); line-height: 1.45; margin-bottom: 12px; }
+  .modal-panel input { width: 100%; background: rgba(10,16,20,0.8); border: 1px solid var(--cyan-dim); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; padding: 9px 10px; border-radius: 6px; margin-bottom: 12px; }
+  .modal-panel input:focus { outline: none; border-color: var(--cyan); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-actions button { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px;
+    padding: 7px 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--cyan-dim); background: none; color: var(--text-dim); }
+  .modal-actions button.primary { border-color: var(--cyan); color: var(--cyan-soft); }
   .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-right: 5px; }
   .dot.live { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
   .dot.busy { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
@@ -354,11 +376,26 @@
 <div class="v-ruler left"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 <div class="v-ruler right"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
+<div class="modal-overlay" id="apiKeyModal">
+  <div class="modal-panel">
+    <h2>Clé API Anthropic</h2>
+    <p>Nécessaire pour que Visor puisse te répondre. Stockée uniquement dans ce navigateur (localStorage) — jamais envoyée ailleurs qu'à l'API Anthropic depuis cet appareil. Ne partage jamais ce fichier une fois ta clé enregistrée dedans.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+    <div class="modal-actions">
+      <button id="apiKeyCancel">ANNULER</button>
+      <button id="apiKeySave" class="primary">ENREGISTRER</button>
+    </div>
+  </div>
+</div>
+
 <div class="shell">
   <div class="telemetry">
     <div class="brand">V.I.S.O<span>.R</span></div>
     <div class="right">
       <span id="sessionTime">00:00</span>
+      <button id="apiKeyBtn" class="icon-btn" title="Configurer la clé API" aria-label="Configurer la clé API">
+        <svg viewBox="0 0 24 24"><path d="M14 2a6 6 0 00-5.66 8H8L2 16v4h4l1-1v-2h2v-2h2l1.66-1.66A6 6 0 1014 2zm2 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+      </button>
       <button id="wakeBtn" class="clear-btn wake-btn" aria-pressed="false"><span class="dot" id="wakeDot"></span>HEY VISOR</button>
       <button id="clearBtn" class="clear-btn">RÉINIT.</button>
       <span><span class="dot" id="statusDot"></span><span id="statusText">VEILLE</span></span>
@@ -470,6 +507,34 @@ let wakeRestartTimer = null;
 let hearingTimer = null;
 const wakeBtn = document.getElementById('wakeBtn');
 const MEMORY_KEY = 'sentry:conversation-history';
+const API_KEY_STORAGE = 'visor:anthropic-api-key';
+
+// --- Clé API Anthropic (saisie par l'utilisateur, jamais embarquée dans ce fichier) ---
+const apiKeyBtn = document.getElementById('apiKeyBtn');
+const apiKeyModal = document.getElementById('apiKeyModal');
+const apiKeyInput = document.getElementById('apiKeyInput');
+function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
+function setApiKey(key) {
+  if (key) localStorage.setItem(API_KEY_STORAGE, key); else localStorage.removeItem(API_KEY_STORAGE);
+  updateApiKeyIndicator();
+}
+function updateApiKeyIndicator() {
+  const has = !!getApiKey();
+  apiKeyBtn.classList.toggle('needs-key', !has);
+  apiKeyBtn.title = has ? 'Clé API configurée (cliquer pour changer)' : 'Configurer la clé API (nécessaire pour discuter)';
+}
+apiKeyBtn.addEventListener('click', () => {
+  apiKeyInput.value = getApiKey();
+  apiKeyModal.classList.add('open');
+  apiKeyInput.focus();
+});
+document.getElementById('apiKeyCancel').addEventListener('click', () => apiKeyModal.classList.remove('open'));
+document.getElementById('apiKeySave').addEventListener('click', () => {
+  setApiKey(apiKeyInput.value.trim());
+  apiKeyModal.classList.remove('open');
+  addMsg('sys', getApiKey() ? 'Clé API enregistrée sur cet appareil.' : 'Clé API effacée.');
+});
+updateApiKeyIndicator();
 
 setInterval(() => {
   const s = Math.floor((Date.now() - sessionStart) / 1000);
@@ -546,7 +611,7 @@ function setState(mode, dotClass, statusLabel, hintLabel) {
 
 // --- Memory persistence ---
 async function saveHistory() {
-  try { await window.storage.set(MEMORY_KEY, JSON.stringify(history), false); } catch (e) { console.error(e); }
+  try { localStorage.setItem(MEMORY_KEY, JSON.stringify(history)); } catch (e) { console.error(e); }
   updateHudMem();
 }
 function updateHudMem() {
@@ -555,9 +620,9 @@ function updateHudMem() {
 }
 async function loadHistory() {
   try {
-    const result = await window.storage.get(MEMORY_KEY, false);
-    if (result && result.value) {
-      history = JSON.parse(result.value);
+    const raw = localStorage.getItem(MEMORY_KEY);
+    if (raw) {
+      history = JSON.parse(raw);
       if (history.length > 0) {
         addMsg('sys', `Mémoire chargée — ${history.length} échange(s) restauré(s).`);
         history.forEach(m => addMsg(m.role === 'user' ? 'user' : 'ai', m.content, m.zone));
@@ -568,7 +633,7 @@ async function loadHistory() {
 }
 async function clearHistory() {
   history = [];
-  try { await window.storage.delete(MEMORY_KEY, false); } catch (e) {}
+  try { localStorage.removeItem(MEMORY_KEY); } catch (e) {}
   consoleEl.innerHTML = '';
   addMsg('sys', 'Mémoire effacée. Nouvelle session.');
   updateHudMem();
@@ -721,19 +786,36 @@ function speak(text) {
 
 // --- Claude API ---
 async function queryModel(prompt, zone) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    addMsg('sys', 'Aucune clé API configurée — clique sur l\'icône clé en haut à droite pour en ajouter une.');
+    setState(null, 'err', 'ERREUR', 'Clé API manquante');
+    return;
+  }
   setState('thinking', 'busy', 'ANALYSE', 'Je réfléchis...');
   const thinkingMsg = addMsg('ai', '<em style="color:var(--text-dim)">...</em>');
   history.push({ role: 'user', content: prompt, zone });
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-6", max_tokens: 1000,
         system: "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.",
         messages: history.map(m => ({ role: m.role, content: m.content }))
       })
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        addMsg('sys', 'Clé API refusée par Anthropic — vérifie-la via l\'icône clé en haut à droite.');
+      }
+      throw new Error('HTTP ' + res.status);
+    }
     const data = await res.json();
     const reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join(' ') || "(réponse vide)";
     history.push({ role: 'assistant', content: reply, zone });
