@@ -603,11 +603,22 @@ setInterval(() => {
   sessionTimeEl.textContent = mm + ':' + ss;
 }, 1000);
 
-// --- Naive keyword-based zone tagging (foundation for real filtering later) ---
+// --- Keyword-based zone tagging, utilisé uniquement quand aucune zone n'est forcée
+// (le clic sur une zone force désormais explicitement le tri, voir handleUserMessage) ---
 const ZONE_KEYWORDS = {
-  cerveau: ['travail','projet pro','oaklen','code','coder','réunion','dossier','job','stage','apprentissage','étude'],
-  coeur: ['santé','médecin','couple','relation','famille','enfant','fatigue','stress','sommeil','émotion','père','mère'],
-  oeil: ['futur','objectif','projet','plan','avenir','vision','rêve','ambition','5 ans','10 ans']
+  cerveau: ['travail','projet pro','oaklen','code','coder','développement','réunion','dossier','job','stage',
+    'apprentissage','étude','formation','boulot','entreprise','collègue','collègues','patron','deadline','tâche',
+    'mission','carrière','cv','entretien d\'embauche','examen','cours','université','école','productivité',
+    'concentration','apprendre','compétence','certification','salaire','promotion','bureau','télétravail',
+    'présentation','rapport','client','contrat','diplôme'],
+  coeur: ['santé','médecin','docteur','hôpital','couple','relation','famille','enfant','enfants','fatigue','stress',
+    'sommeil','dormir','émotion','émotions','père','mère','ami','amie','amitié','amour','conjoint','conjointe',
+    'mari','femme','dispute','thérapie','psy','anxiété','angoisse','humeur','forme physique','sport','alimentation',
+    'régime','maladie','symptôme','douleur','rendez-vous médical','vaccin','médicament','bien-être','méditation',
+    'repos','triste','tristesse','heureux','heureuse'],
+  oeil: ['futur','objectif','objectifs','projet perso','plan','avenir','vision','rêve','rêves','ambition','5 ans',
+    '10 ans','envie','souhait','changement de vie','déménagement','voyage','retraite','investissement','épargne',
+    'achat maison','création d\'entreprise','nouveau départ','aspiration','perspective','horizon','long terme']
 };
 function guessZone(text) {
   const t = text.toLowerCase();
@@ -827,7 +838,8 @@ async function submitText() {
 }
 
 async function handleUserMessage(text) {
-  const zone = guessZone(text);
+  // Une zone active force le classement (mémoire dédiée) ; sans sélection, on devine par mots-clés.
+  const zone = activeZone || guessZone(text);
   addMsg('user', text, zone);
   await queryModel(text, zone);
 }
@@ -962,15 +974,31 @@ async function callAnthropic(payload) {
   }
 }
 
+const VISOR_BASE_PROMPT = "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal à la personnalité affirmée, dans l'esprit de J.A.R.V.I.S. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Ton ton est pince-sans-rire et légèrement ironique : tu n'hésites pas à taquiner gentiment l'utilisateur avec un sarcasme mesuré et une pointe d'humour sec, sans jamais être blessant, méprisant ou irrespectueux — la taquinerie reste affectueuse, jamais froide.";
+const ZONE_FOCUS = {
+  cerveau: " Ici, tu es concentré sur la zone Cognition (travail, apprentissage, productivité) : garde ton raisonnement centré sur ce terrain, sans le mélanger aux sujets santé ou projets long terme sauf si l'utilisateur les amène lui-même.",
+  coeur: " Ici, tu es concentré sur la zone Vitals (santé, relations, émotions) : reste attentif et posé sur ces sujets sensibles, garde ta pointe d'ironie mais mise avant tout sur la bienveillance.",
+  oeil: " Ici, tu es concentré sur la zone Horizon (projets futurs, objectifs, vision long terme) : aide à clarifier et structurer les ambitions et échéances, sans replonger dans le quotidien immédiat sauf si pertinent."
+};
+const VISOR_GLOBAL_SUFFIX = " Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.";
+function buildSystemPrompt(scopedZone) {
+  if (scopedZone && ZONE_FOCUS[scopedZone]) return VISOR_BASE_PROMPT + ZONE_FOCUS[scopedZone];
+  return VISOR_BASE_PROMPT + VISOR_GLOBAL_SUFFIX;
+}
+
 async function queryModel(prompt, zone) {
   setState('thinking', 'busy', 'ANALYSE', 'Je réfléchis...');
   const thinkingMsg = addMsg('ai', '<em style="color:var(--text-dim)">...</em>');
   history.push({ role: 'user', content: prompt, zone });
+  // Une zone spécifique (hors Global) n'envoie à Claude que sa propre mémoire —
+  // les échanges Cognition/Vitals/Horizon ne se mélangent plus entre eux.
+  const scopedZone = (zone && zone !== 'general') ? zone : null;
+  const contextHistory = scopedZone ? history.filter(m => m.zone === scopedZone) : history;
   try {
     const res = await callAnthropic({
       model: "claude-sonnet-4-6", max_tokens: 1000,
-      system: "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal à la personnalité affirmée, dans l'esprit de J.A.R.V.I.S. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Ton ton est pince-sans-rire et légèrement ironique : tu n'hésites pas à taquiner gentiment l'utilisateur avec un sarcasme mesuré et une pointe d'humour sec, sans jamais être blessant, méprisant ou irrespectueux — la taquinerie reste affectueuse, jamais froide. Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.",
-      messages: history.map(m => ({ role: m.role, content: m.content }))
+      system: buildSystemPrompt(scopedZone),
+      messages: contextHistory.map(m => ({ role: m.role, content: m.content }))
     });
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
