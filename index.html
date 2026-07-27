@@ -980,11 +980,12 @@ const ZONE_FOCUS = {
   coeur: " Ici, tu es concentré sur la zone Vitals (santé, relations, émotions) : reste attentif et posé sur ces sujets sensibles, garde ta pointe d'ironie mais mise avant tout sur la bienveillance.",
   oeil: " Ici, tu es concentré sur la zone Horizon (projets futurs, objectifs, vision long terme) : aide à clarifier et structurer les ambitions et échéances, sans replonger dans le quotidien immédiat sauf si pertinent."
 };
-const VISOR_GLOBAL_SUFFIX = " Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.";
+const VISOR_GLOBAL_SUFFIX = " Ici en mode Global, tu as accès à l'historique complet de l'utilisateur toutes zones confondues : chaque échange passé est étiqueté [Cognition], [Vitals] ou [Horizon] selon son thème d'origine. Utilise activement ces informations pour faire des liens et des synthèses entre les domaines de sa vie (travail/cognition, santé et relations, projets futurs) dès que c'est pertinent, sans attendre qu'on te le demande explicitement — c'est précisément le rôle du mode Global, par opposition aux zones spécialisées qui restent cloisonnées à leur propre sujet.";
 function buildSystemPrompt(scopedZone) {
   if (scopedZone && ZONE_FOCUS[scopedZone]) return VISOR_BASE_PROMPT + ZONE_FOCUS[scopedZone];
   return VISOR_BASE_PROMPT + VISOR_GLOBAL_SUFFIX;
 }
+const ZONE_LABELS = { cerveau: 'Cognition', coeur: 'Vitals', oeil: 'Horizon' };
 
 async function queryModel(prompt, zone) {
   setState('thinking', 'busy', 'ANALYSE', 'Je réfléchis...');
@@ -993,12 +994,19 @@ async function queryModel(prompt, zone) {
   // Une zone spécifique (hors Global) n'envoie à Claude que sa propre mémoire —
   // les échanges Cognition/Vitals/Horizon ne se mélangent plus entre eux.
   const scopedZone = (zone && zone !== 'general') ? zone : null;
-  const contextHistory = scopedZone ? history.filter(m => m.zone === scopedZone) : history;
+  // En mode Global, on étiquette chaque échange par sa zone d'origine pour que Claude
+  // puisse structurellement recouper/synthétiser entre Cognition/Vitals/Horizon.
+  const contextMessages = scopedZone
+    ? history.filter(m => m.zone === scopedZone).map(m => ({ role: m.role, content: m.content }))
+    : history.map(m => ({
+        role: m.role,
+        content: (m.role === 'user' && ZONE_LABELS[m.zone]) ? `[${ZONE_LABELS[m.zone]}] ${m.content}` : m.content
+      }));
   try {
     const res = await callAnthropic({
       model: "claude-sonnet-4-6", max_tokens: 1000,
       system: buildSystemPrompt(scopedZone),
-      messages: contextHistory.map(m => ({ role: m.role, content: m.content }))
+      messages: contextMessages
     });
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
