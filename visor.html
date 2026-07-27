@@ -513,6 +513,9 @@ const API_KEY_STORAGE = 'visor:anthropic-api-key';
 const apiKeyBtn = document.getElementById('apiKeyBtn');
 const apiKeyModal = document.getElementById('apiKeyModal');
 const apiKeyInput = document.getElementById('apiKeyInput');
+// null = pas encore su si l'appel "natif" (gratuit, claude.ai) fonctionne ici ;
+// bascule à true/false dès le premier message envoyé.
+let nativeConfirmedWorking = null;
 function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
 function setApiKey(key) {
   if (key) localStorage.setItem(API_KEY_STORAGE, key); else localStorage.removeItem(API_KEY_STORAGE);
@@ -520,8 +523,12 @@ function setApiKey(key) {
 }
 function updateApiKeyIndicator() {
   const has = !!getApiKey();
-  apiKeyBtn.classList.toggle('needs-key', !has);
-  apiKeyBtn.title = has ? 'Clé API configurée (cliquer pour changer)' : 'Configurer la clé API (nécessaire pour discuter)';
+  // On n'affiche l'alerte que si on a confirmé être hors claude.ai ET qu'aucune clé n'est fournie —
+  // sur claude.ai, l'absence de clé personnelle est la situation normale, pas une erreur.
+  apiKeyBtn.classList.toggle('needs-key', !has && nativeConfirmedWorking === false);
+  apiKeyBtn.title = has
+    ? 'Clé API personnelle configurée (cliquer pour changer)'
+    : 'Configurer une clé API personnelle (uniquement nécessaire hors claude.ai)';
 }
 apiKeyBtn.addEventListener('click', () => {
   apiKeyInput.value = getApiKey();
@@ -785,18 +792,28 @@ function speak(text) {
 }
 
 // --- Claude API ---
-async function queryModel(prompt, zone) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    addMsg('sys', 'Aucune clé API configurée — clique sur l\'icône clé en haut à droite pour en ajouter une.');
-    setState(null, 'err', 'ERREUR', 'Clé API manquante');
-    return;
-  }
-  setState('thinking', 'busy', 'ANALYSE', 'Je réfléchis...');
-  const thinkingMsg = addMsg('ai', '<em style="color:var(--text-dim)">...</em>');
-  history.push({ role: 'user', content: prompt, zone });
+// Deux modes, essayés dans l'ordre :
+// 1) "natif" — fonctionne uniquement publié comme artefact claude.ai, qui intercepte
+//    cet appel et injecte l'authentification automatiquement et gratuitement.
+// 2) clé personnelle — utilisé seulement si (1) échoue (CORS => on n'est pas sur
+//    claude.ai, ex. fichier local ou hébergé ailleurs), et seulement si l'utilisateur
+//    a lui-même renseigné une clé via l'icône clé.
+async function callAnthropic(payload) {
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    nativeConfirmedWorking = true;
+    updateApiKeyIndicator();
+    return res;
+  } catch (nativeErr) {
+    nativeConfirmedWorking = false;
+    updateApiKeyIndicator();
+    const apiKey = getApiKey();
+    if (!apiKey) throw Object.assign(new Error('NO_KEY'), { code: 'NO_KEY' });
+    return fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -804,11 +821,20 @@ async function queryModel(prompt, zone) {
         "anthropic-version": "2023-06-01",
         "anthropic-dangerous-direct-browser-access": "true"
       },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6", max_tokens: 1000,
-        system: "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.",
-        messages: history.map(m => ({ role: m.role, content: m.content }))
-      })
+      body: JSON.stringify(payload)
+    });
+  }
+}
+
+async function queryModel(prompt, zone) {
+  setState('thinking', 'busy', 'ANALYSE', 'Je réfléchis...');
+  const thinkingMsg = addMsg('ai', '<em style="color:var(--text-dim)">...</em>');
+  history.push({ role: 'user', content: prompt, zone });
+  try {
+    const res = await callAnthropic({
+      model: "claude-sonnet-4-6", max_tokens: 1000,
+      system: "Tu es Visor (Vision, Intelligence, Santé, Organisation, Raisonnement), un assistant vocal. Réponds de façon concise et naturelle à l'oral, en français, sans markdown ni listes à puces. Tu peux aussi faire des liens entre plusieurs domaines de la vie de l'utilisateur (travail/cognition, santé et relations, projets futurs) quand c'est pertinent pour donner une réponse plus complète et un raisonnement global, pas cloisonné par thème.",
+      messages: history.map(m => ({ role: m.role, content: m.content }))
     });
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
@@ -827,7 +853,10 @@ async function queryModel(prompt, zone) {
     consoleEl.scrollTop = consoleEl.scrollHeight;
     speak(reply);
   } catch (err) {
-    thinkingMsg.innerHTML = `<span class="who">Visor</span><span style="color:var(--err)">Erreur de connexion (${err.message}).</span>`;
+    const msg = err.code === 'NO_KEY'
+      ? 'Aucune clé API configurée — clique sur l\'icône clé en haut à droite pour en ajouter une (uniquement nécessaire hors claude.ai).'
+      : `Erreur de connexion (${err.message}).`;
+    thinkingMsg.innerHTML = `<span class="who">Visor</span><span style="color:var(--err)">${msg}</span>`;
     setState(null, 'err', 'ERREUR', 'Appuie pour réessayer');
   }
 }
